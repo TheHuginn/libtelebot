@@ -73,3 +73,62 @@ public sealed record SendMessageRequestParams(
         
     }
 }
+
+public sealed record SendPhotoRequestParams(
+    long ChatId,
+    InputFile Photo,
+    string? Caption = null,
+    string? ParseMode = null,
+    bool? HasSpoiler = null,
+    bool? DisableNotification = null,
+    bool? ProtectContent = null,
+    int? ReplyToMessageId = null,
+    bool? AllowSendingWithoutReply = null
+) : TelegramRequest("sendPhoto")
+{
+    public override IEnumerable<TelegramRequestField> GetRequestFields()
+    {
+        yield return new TelegramRequestField("chat_id", ChatId.ToString());
+
+        if (Caption is not null)
+            yield return new TelegramRequestField("caption", Caption);
+
+        if (ParseMode is not null)
+            yield return new TelegramRequestField("parse_mode", ParseMode);
+
+        if (HasSpoiler is not null)
+            yield return new TelegramRequestField(
+                "has_spoiler",
+                HasSpoiler.Value ? "true" : "false"
+            );
+
+        if (DisableNotification is not null)
+            yield return new TelegramRequestField(
+                "disable_notification",
+                DisableNotification.Value ? "true" : "false"
+            );
+
+        if (ProtectContent is not null)
+            yield return new TelegramRequestField(
+                "protect_content",
+                ProtectContent.Value ? "true" : "false"
+            );
+
+        if (ReplyToMessageId is not null)
+            yield return new TelegramRequestField(
+                "reply_to_message_id",
+                ReplyToMessageId.Value.ToString()
+            );
+
+        if (AllowSendingWithoutReply is not null)
+            yield return new TelegramRequestField(
+                "allow_sending_without_reply",
+                AllowSendingWithoutReply.Value ? "true" : "false"
+            );
+    }
+
+    public override IEnumerable<TelegramRequestFile> GetRequestFiles()
+    {
+        yield return new TelegramRequestFile("photo", Photo);
+    }
+}
