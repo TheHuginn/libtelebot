@@ -2,7 +2,7 @@ namespace Telebot;
 
 public record TelegramRequestField(
     string Name,
-    string? Value
+    string Value
 );
 
 public abstract record InputFile;
