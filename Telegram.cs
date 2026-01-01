@@ -8,6 +8,12 @@ public interface ITelegramClient
     public Task<IReadOnlyList<Update>> GetUpdatesAsync(GetUpdatesRequestParams requestParams);
 }
 
+//Error
+public class TelebotException(int? code, string message) : Exception(message)
+{
+    public int? Code { get; } =  code;
+}
+
 public partial class Telegram : ITelegramClient
 {
     private readonly HttpClient _httpClient;
