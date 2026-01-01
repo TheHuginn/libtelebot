@@ -43,4 +43,9 @@ public partial class Telegram : ITelegramClient
     {
         return await RawRequestAsync<Message>(requestParams);
     }
+
+    public async Task<Message> SendPhotoAsync(SendPhotoRequestParams requestParams)
+    {
+        return await RawRequestAsync<Message>(requestParams);
+    }
 }
