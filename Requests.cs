@@ -44,3 +44,32 @@ public sealed record GetUpdatesRequestParams(
             yield return new TelegramRequestField("allowed_updates", JsonSerializer.Serialize(AllowedUpdates));
     }
 }
+
+public sealed record SendMessageRequestParams(
+    long ChatId,
+    string Text,
+    string? ParseMode = null,
+    bool? DisableNotification = null,
+    bool? ProtectContent = null,
+    int? ReplyToMessageId = null,
+    bool? AllowSendingWithoutReply = null
+) : TelegramRequest("sendMessage")
+{
+    public override IEnumerable<TelegramRequestField> GetRequestFields()
+    {
+        yield return new TelegramRequestField("chat_id", ChatId.ToString());
+        yield return new TelegramRequestField("text", Text);
+        
+        if (ParseMode is not null)
+            yield return new TelegramRequestField("parse_mode", ParseMode);
+        if (DisableNotification is not null)
+            yield return new TelegramRequestField("disable_notification", DisableNotification.ToString());
+        if (ProtectContent is not null)
+            yield return new TelegramRequestField("protect_content", ProtectContent.ToString());
+        if (ReplyToMessageId is not null)
+            yield return new TelegramRequestField("reply_to_message_id", ReplyToMessageId.Value.ToString());
+        if (AllowSendingWithoutReply is not null)
+            yield return new TelegramRequestField("allow_sending_without_reply", AllowSendingWithoutReply.ToString());
+        
+    }
+}

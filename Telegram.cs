@@ -32,4 +32,9 @@ public partial class Telegram : ITelegramClient
     {
         return await RawRequestAsync<IReadOnlyList<Update>>(requestParams);
     }
+
+    public async Task<Message> SendMessageAync(SendMessageRequestParams requestParams)
+    {
+        return await RawRequestAsync<Message>(requestParams);
+    }
 }
