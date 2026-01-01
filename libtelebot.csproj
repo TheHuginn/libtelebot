@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>libtelebot</PackageId>
+    <Version>0.0.1</Version>
+    <Authors>TheHuginn</Authors>
+    <RootNamespace>Telebot</RootNamespace>
+  </PropertyGroup>
+
+</Project>
