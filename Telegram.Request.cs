@@ -9,8 +9,6 @@ public partial class Telegram
         bool Ok,
         int? ErrorCode = null,
         string? Description = null,
-
-        //Nullable which is abnormal better create a success type for schema, result and eror is not the same
         JsonElement? Result = null
     );
 
@@ -19,26 +17,33 @@ public partial class Telegram
         IEnumerable<TelegramRequestFile> files)
     {
         var pairs = new List<KeyValuePair<string, string>>();
+
         foreach (var field in fields)
-            pairs.Add(new KeyValuePair<string, string>(field.Name, field.Value));
+            pairs.Add(new(field.Name, field.Value));
 
         foreach (var file in files)
+        {
             switch (file.File)
             {
                 case InputFileWithId id:
-                    pairs.Add(new KeyValuePair<string, string>(file.Name, id.Id));
+                    pairs.Add(new(file.Name, id.Id));
                     break;
-                case InputFileWithUrl url:
-                    pairs.Add(new KeyValuePair<string, string>(file.Name, url.Url.ToString()));
-                    break;
-                case InputFileWithStream stream:
-                    throw new Exception($"Unsupported file type: {file.Name} requires multipart/form-data transport");
-            }
 
-        return new HttpRequestMessage
+                case InputFileWithUrl url:
+                    pairs.Add(new(file.Name, url.Url.ToString()));
+                    break;
+
+                case InputFileWithStream:
+                    throw new TelebotException(
+                        null,
+                        $"File '{file.Name}' requires multipart/form-data transport"
+                    );
+            }
+        }
+
+        return new HttpRequestMessage(HttpMethod.Post, "")
         {
-            Content = new FormUrlEncodedContent(pairs),
-            Method = HttpMethod.Post
+            Content = new FormUrlEncodedContent(pairs)
         };
     }
 
@@ -48,15 +53,11 @@ public partial class Telegram
     {
         var content = new MultipartFormDataContent();
 
-        // обычные поля
         foreach (var field in fields)
-            content.Add(
-                new StringContent(field.Value),
-                field.Name
-            );
+            content.Add(new StringContent(field.Value), field.Name);
 
-        // файлы / file-поля
         foreach (var file in files)
+        {
             switch (file.File)
             {
                 case InputFileWithStream stream:
@@ -65,29 +66,19 @@ public partial class Telegram
                     streamContent.Headers.ContentType =
                         new System.Net.Http.Headers.MediaTypeHeaderValue(stream.ContentType);
 
-                    content.Add(
-                        streamContent,
-                        file.Name,
-                        stream.FileName
-                    );
+                    content.Add(streamContent, file.Name, stream.FileName);
                     break;
                 }
 
                 case InputFileWithId id:
-                    throw new InvalidOperationException(
-                        $"Unsupported InputFile type: {file.File.GetType().Name}"
-                    );
+                    content.Add(new StringContent(id.Id), file.Name);
+                    break;
 
                 case InputFileWithUrl url:
-                    throw new InvalidOperationException(
-                        $"Unsupported InputFile type: {file.File.GetType().Name}"
-                    );
-
-                default:
-                    throw new InvalidOperationException(
-                        $"Unsupported InputFile type: {file.File.GetType().Name}"
-                    );
+                    content.Add(new StringContent(url.Url.ToString()), file.Name);
+                    break;
             }
+        }
 
         return new HttpRequestMessage(HttpMethod.Post, "")
         {
@@ -98,42 +89,60 @@ public partial class Telegram
     private async Task<T> RawRequestAsync<T>(TelegramRequest request)
     {
         var fields = request.GetRequestFields().ToList();
-        var files = request.GetRequestFiles().ToList();
-
-        //Now, decide on transport
+        var files  = request.GetRequestFiles().ToList();
 
         var message = files.Any(f => f.File is InputFileWithStream)
             ? RequestWithMultipart(fields, files)
             : RequestWithFormData(fields, files);
 
-        message.RequestUri = new Uri(_httpClient.BaseAddress + request.Endpoint, UriKind.Absolute);
-        Console.WriteLine(message.RequestUri.AbsoluteUri);
+        message.RequestUri = new Uri(
+            _httpClient.BaseAddress + request.Endpoint,
+            UriKind.Absolute
+        );
 
-        var response = await _httpClient.SendAsync(message);
-        //Handdle errors with exception, make a function for it. to throw with typed one. only for HTTP status
-        response.EnsureSuccessStatusCode();
+        using var response = await _httpClient.SendAsync(message);
 
-
-        //Serilize to TelegramResponse
-        var telegramResponse = await response.Content.ReadFromJsonAsync<TelegramResponse>() ??
-                               throw new Exception("Failed to serialize TelegramResponse, abnormal error");
-
-        if (!telegramResponse.Ok)
+        // HTTP / transport errors
+        if (!response.IsSuccessStatusCode)
         {
-            throw new Exception(
-                $"{telegramResponse.ErrorCode} :" +
-                $"{telegramResponse.Description}"
+            var body = await response.Content.ReadAsStringAsync();
+            throw new TelebotException(
+                (int)response.StatusCode,
+                $"HTTP error {(int)response.StatusCode}: {body}"
             );
         }
 
-        if (telegramResponse.Result == null)
-            throw new Exception("Failed to deserialize TelegramResponse, abnormal error");
+        var telegramResponse =
+            await response.Content.ReadFromJsonAsync<TelegramResponse>()
+            ?? throw new TelebotException(
+                null,
+                "Telegram API returned an empty response body"
+            );
 
-        var result = telegramResponse.Result.Value.Deserialize<T>() ?? throw new Exception(
-            $"Failed to deserialize Telegram result to {typeof(T).Name}"
-        );
+        // Telegram API error
+        if (!telegramResponse.Ok)
+        {
+            throw new TelebotException(
+                telegramResponse.ErrorCode,
+                telegramResponse.Description ?? "Telegram API error"
+            );
+        }
 
+        // Protocol invariant
+        if (telegramResponse.Result is null)
+        {
+            throw new TelebotException(
+                null,
+                "Telegram API returned ok=true but result is missing"
+            );
+        }
 
-        return result ?? throw new Exception("Failed to serialize, internal TG error");
+        var result = telegramResponse.Result.Value.Deserialize<T>()
+            ?? throw new TelebotException(
+                null,
+                $"Failed to deserialize Telegram result to {typeof(T).Name}"
+            );
+
+        return result;
     }
 }
