@@ -34,7 +34,7 @@ foreach (var update in updates)
         );
     }
 }
-
+```
 
 ## Contributing
 
