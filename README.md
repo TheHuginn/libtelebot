@@ -43,6 +43,6 @@ This is a learning-oriented project.
 Contributions are organized via **Notion** using small, atomic tasks.
 
 To contribute:
-- ask for Notion access
+- ask for Notion access anton.stafeyev@gmail.com
 - pick an atomic task
 - submit a PR or discuss the solution
