@@ -86,7 +86,7 @@ public partial class Telegram
         };
     }
 
-    private async Task<T> RawRequestAsync<T>(TelegramRequest request)
+    private async Task<T> RequestAsync<T>(TelegramRequest request)
     {
         var fields = request.GetRequestFields().ToList();
         var files  = request.GetRequestFiles().ToList();

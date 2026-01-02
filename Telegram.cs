@@ -8,13 +8,12 @@ public interface ITelegramClient
     public Task<IReadOnlyList<Update>> GetUpdatesAsync(GetUpdatesRequestParams requestParams);
 }
 
-//Error
 public class TelebotException(int? code, string message) : Exception(message)
 {
-    public int? Code { get; } =  code;
+    public int? Code { get; } = code;
 }
 
-public partial class Telegram : ITelegramClient
+public sealed partial class Telegram : ITelegramClient, IDisposable
 {
     private readonly HttpClient _httpClient;
     private string token;
@@ -31,21 +30,26 @@ public partial class Telegram : ITelegramClient
 
     public async Task<User> GetMeAsync(GetMeRequestParams requestParams)
     {
-        return await RawRequestAsync<User>(requestParams);
+        return await RequestAsync<User>(requestParams);
     }
 
     public async Task<IReadOnlyList<Update>> GetUpdatesAsync(GetUpdatesRequestParams requestParams)
     {
-        return await RawRequestAsync<IReadOnlyList<Update>>(requestParams);
+        return await RequestAsync<IReadOnlyList<Update>>(requestParams);
     }
 
     public async Task<Message> SendMessageAync(SendMessageRequestParams requestParams)
     {
-        return await RawRequestAsync<Message>(requestParams);
+        return await RequestAsync<Message>(requestParams);
     }
 
     public async Task<Message> SendPhotoAsync(SendPhotoRequestParams requestParams)
     {
-        return await RawRequestAsync<Message>(requestParams);
+        return await RequestAsync<Message>(requestParams);
+    }
+
+    public void Dispose()
+    {
+        _httpClient.Dispose();
     }
 }
