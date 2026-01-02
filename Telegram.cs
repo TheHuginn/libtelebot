@@ -4,8 +4,10 @@ namespace Telebot;
 
 public interface ITelegramClient
 {
-    public Task<User> GetMeAsync(GetMeRequestParams requestParams);
-    public Task<IReadOnlyList<Update>> GetUpdatesAsync(GetUpdatesRequestParams requestParams);
+    Task<User> GetMeAsync(GetMeRequestParams requestParams);
+    Task<IReadOnlyList<Update>> GetUpdatesAsync(GetUpdatesRequestParams requestParams);
+    Task<Message> SendMessageAync(SendMessageRequestParams requestParams);
+    Task<Message> SendPhotoAsync(SendPhotoRequestParams requestParams);
 }
 
 public class TelebotException(int? code, string message) : Exception(message)
