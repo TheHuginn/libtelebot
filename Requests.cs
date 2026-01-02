@@ -2,12 +2,14 @@ using System.Text.Json;
 
 namespace Telebot;
 
+//Allows request encoding to Form/Multipart
 public interface ITelegramEncodable
 {
     IEnumerable<TelegramRequestField> GetRequestFields();
     IEnumerable<TelegramRequestFile> GetRequestFiles();
 }
 
+//Base for every request
 public record TelegramRequest(string Endpoint) : ITelegramEncodable
 {
     public virtual IEnumerable<TelegramRequestField> GetRequestFields()
@@ -45,6 +47,7 @@ public sealed record GetUpdatesRequestParams(
     }
 }
 
+//Request for sendMessage
 public sealed record SendMessageRequestParams(
     long ChatId,
     string Text,
@@ -74,6 +77,7 @@ public sealed record SendMessageRequestParams(
     }
 }
 
+//Request for sendPhoto
 public sealed record SendPhotoRequestParams(
     long ChatId,
     InputFile Photo,
