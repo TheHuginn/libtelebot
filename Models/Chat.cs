@@ -114,3 +114,94 @@ public record ChatPermissions(
     [property: JsonPropertyName("can_manage_topics")]
     bool? CanManageTopics
 );
+
+public record ChatFullInfo(
+    
+    [property: JsonPropertyName("id")]
+    long Id,
+
+    [property: JsonPropertyName("type")]
+    string Type,
+
+    [property: JsonPropertyName("title")]
+    string? Title,
+
+    [property: JsonPropertyName("username")]
+    string? Username,
+
+    [property: JsonPropertyName("first_name")]
+    string? FirstName,
+
+    [property: JsonPropertyName("last_name")]
+    string? LastName,
+
+    [property: JsonPropertyName("is_forum")]
+    bool? IsForum,
+    
+    [property: JsonPropertyName("photo")]
+    ChatPhoto? Photo,
+
+    [property: JsonPropertyName("active_usernames")]
+    string[]? ActiveUsernames,
+
+    [property: JsonPropertyName("emoji_status_custom_emoji_id")]
+    string? EmojiStatusCustomEmojiId,
+
+    [property: JsonPropertyName("bio")]
+    string? Bio,
+
+    [property: JsonPropertyName("has_private_forwards")]
+    bool? HasPrivateForwards,
+
+    [property: JsonPropertyName("has_restricted_voice_and_video_messages")]
+    bool? HasRestrictedVoiceAndVideoMessages,
+
+    [property: JsonPropertyName("join_to_send_messages")]
+    bool? JoinToSendMessages,
+
+    [property: JsonPropertyName("join_by_request")]
+    bool? JoinByRequest,
+
+    [property: JsonPropertyName("description")]
+    string? Description,
+
+    [property: JsonPropertyName("invite_link")]
+    string? InviteLink,
+
+    [property: JsonPropertyName("pinned_message")]
+    Message? PinnedMessage,
+
+    [property: JsonPropertyName("permissions")]
+    ChatPermissions? Permissions,
+
+    [property: JsonPropertyName("slow_mode_delay")]
+    int? SlowModeDelay,
+
+    [property: JsonPropertyName("message_auto_delete_time")]
+    int? MessageAutoDeleteTime,
+
+    [property: JsonPropertyName("has_protected_content")]
+    bool? HasProtectedContent,
+
+    [property: JsonPropertyName("sticker_set_name")]
+    string? StickerSetName,
+
+    [property: JsonPropertyName("can_set_sticker_set")]
+    bool? CanSetStickerSet,
+
+    [property: JsonPropertyName("custom_emoji_sticker_set_name")]
+    string? CustomEmojiStickerSetName,
+
+    [property: JsonPropertyName("linked_chat_id")]
+    long? LinkedChatId,
+
+    [property: JsonPropertyName("birthdate")]
+    Birthdate? Birthdate,
+
+    [property: JsonPropertyName("business_intro")]
+    BusinessIntro? BusinessIntro,
+
+    [property: JsonPropertyName("business_location")]
+    BusinessLocation? BusinessLocation
+);
+
