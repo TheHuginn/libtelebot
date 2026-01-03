@@ -113,8 +113,6 @@ public class DefaultTelegramTransport : ITelegramTransport
             $"/bot{token}/{request.Endpoint}",
             UriKind.Relative
         );
-        
-        Console.WriteLine(message.RequestUri);
 
         using var response = await _httpClient.SendAsync(message);
 
