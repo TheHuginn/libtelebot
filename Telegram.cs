@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Telebot.Models;
 
 namespace Telebot;
@@ -15,43 +16,36 @@ public class TelebotException(int? code, string message) : Exception(message)
     public int? Code { get; } = code;
 }
 
-public sealed partial class Telegram : ITelegramClient, IDisposable
+public sealed partial class Telegram : ITelegramClient
 {
-    private readonly HttpClient _httpClient;
-    private string token;
+    private string _token;
+    private ITelegramTransport _transport;
+    
+    public Telegram(string token) : this(new DefaultTelegramTransport(), token){}
 
-
-    public Telegram(string token)
+    internal Telegram(ITelegramTransport transport, string token)
     {
-        _httpClient = new HttpClient();
-        _httpClient.BaseAddress = new Uri("https://api.telegram.org/bot" + token + "/");
-        _httpClient.Timeout = new TimeSpan(0, 0, 30);
-        this.token = token;
+        _transport = transport;
+        _token = token;
     }
-
-
+    
     public async Task<User> GetMeAsync(GetMeRequestParams requestParams)
     {
-        return await RequestAsync<User>(requestParams);
+        return await _transport.RequestAsync<User>(requestParams, _token);
     }
 
     public async Task<IReadOnlyList<Update>> GetUpdatesAsync(GetUpdatesRequestParams requestParams)
     {
-        return await RequestAsync<IReadOnlyList<Update>>(requestParams);
+        return await _transport.RequestAsync<IReadOnlyList<Update>>(requestParams, _token);
     }
 
     public async Task<Message> SendMessageAync(SendMessageRequestParams requestParams)
     {
-        return await RequestAsync<Message>(requestParams);
+        return await _transport.RequestAsync<Message>(requestParams, _token);
     }
 
     public async Task<Message> SendPhotoAsync(SendPhotoRequestParams requestParams)
     {
-        return await RequestAsync<Message>(requestParams);
-    }
-
-    public void Dispose()
-    {
-        _httpClient.Dispose();
+        return await _transport.RequestAsync<Message>(requestParams, _token);
     }
 }
