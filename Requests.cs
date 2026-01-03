@@ -62,17 +62,20 @@ public sealed record SendMessageRequestParams(
     {
         yield return new TelegramRequestField("chat_id", ChatId.ToString());
         yield return new TelegramRequestField("text", Text);
-        
+
         if (ParseMode is not null)
             yield return new TelegramRequestField("parse_mode", ParseMode);
         if (DisableNotification is not null)
-            yield return new TelegramRequestField("disable_notification", DisableNotification.Value.ToString());
+            yield return new TelegramRequestField("disable_notification", 
+                DisableNotification.Value ? "true" : "false");
         if (ProtectContent is not null)
-            yield return new TelegramRequestField("protect_content", ProtectContent.Value.ToString());
+            yield return new TelegramRequestField("protect_content", 
+                ProtectContent.Value ? "true" : "false");
         if (ReplyToMessageId is not null)
             yield return new TelegramRequestField("reply_to_message_id", ReplyToMessageId.Value.ToString());
         if (AllowSendingWithoutReply is not null)
-            yield return new TelegramRequestField("allow_sending_without_reply", AllowSendingWithoutReply.Value.ToString());
+            yield return new TelegramRequestField("allow_sending_without_reply",
+                AllowSendingWithoutReply.Value ? "true" : "false");
         
     }
 }
