@@ -116,7 +116,6 @@ public record ChatPermissions(
 );
 
 public record ChatFullInfo(
-    
     [property: JsonPropertyName("id")]
     long Id,
 
@@ -137,15 +136,59 @@ public record ChatFullInfo(
 
     [property: JsonPropertyName("is_forum")]
     bool? IsForum,
-    
+
+    [property: JsonPropertyName("is_direct_messages")]
+    bool? IsDirectMessages,
+
+    [property: JsonPropertyName("accent_color_id")]
+    int AccentColorId,
+
+    [property: JsonPropertyName("max_reaction_count")]
+    int MaxReactionCount,
+
     [property: JsonPropertyName("photo")]
     ChatPhoto? Photo,
 
     [property: JsonPropertyName("active_usernames")]
     string[]? ActiveUsernames,
 
+    [property: JsonPropertyName("birthdate")]
+    Birthdate? Birthdate,
+
+    [property: JsonPropertyName("business_intro")]
+    BusinessIntro? BusinessIntro,
+
+    [property: JsonPropertyName("business_location")]
+    BusinessLocation? BusinessLocation,
+    
+    /* IMPLEMENT TYPES
+    [property: JsonPropertyName("business_opening_hours")]
+    BusinessOpeningHours? BusinessOpeningHours,
+    */
+
+    [property: JsonPropertyName("personal_chat")]
+    Chat? PersonalChat,
+
+    [property: JsonPropertyName("parent_chat")]
+    Chat? ParentChat,
+
+    [property: JsonPropertyName("available_reactions")]
+    ReactionType[]? AvailableReactions,
+
+    [property: JsonPropertyName("background_custom_emoji_id")]
+    string? BackgroundCustomEmojiId,
+
+    [property: JsonPropertyName("profile_accent_color_id")]
+    int? ProfileAccentColorId,
+
+    [property: JsonPropertyName("profile_background_custom_emoji_id")]
+    string? ProfileBackgroundCustomEmojiId,
+
     [property: JsonPropertyName("emoji_status_custom_emoji_id")]
     string? EmojiStatusCustomEmojiId,
+
+    [property: JsonPropertyName("emoji_status_expiration_date")]
+    int? EmojiStatusExpirationDate,
 
     [property: JsonPropertyName("bio")]
     string? Bio,
@@ -177,8 +220,17 @@ public record ChatFullInfo(
     [property: JsonPropertyName("slow_mode_delay")]
     int? SlowModeDelay,
 
+    [property: JsonPropertyName("unrestrict_boost_count")]
+    int? UnrestrictBoostCount,
+
     [property: JsonPropertyName("message_auto_delete_time")]
     int? MessageAutoDeleteTime,
+
+    [property: JsonPropertyName("has_aggressive_anti_spam_enabled")]
+    bool? HasAggressiveAntiSpamEnabled,
+
+    [property: JsonPropertyName("has_hidden_members")]
+    bool? HasHiddenMembers,
 
     [property: JsonPropertyName("has_protected_content")]
     bool? HasProtectedContent,
@@ -194,14 +246,20 @@ public record ChatFullInfo(
 
     [property: JsonPropertyName("linked_chat_id")]
     long? LinkedChatId,
-
-    [property: JsonPropertyName("birthdate")]
-    Birthdate? Birthdate,
-
-    [property: JsonPropertyName("business_intro")]
-    BusinessIntro? BusinessIntro,
-
-    [property: JsonPropertyName("business_location")]
-    BusinessLocation? BusinessLocation
+    
+    /* IMPLEMENT TYPES
+    [property: JsonPropertyName("location")]
+    ChatLocation? Location,
+    
+    [property: JsonPropertyName("rating")]
+    UserRating? Rating,
+    */
+    [property: JsonPropertyName("paid_message_star_count")]
+    int? PaidMessageStarCount
+    
+    /* IMPLEMENT TYPES
+    [property: JsonPropertyName("unique_gift_colors")]
+    UniqueGiftColors? UniqueGiftColors
+    */
 );
 
