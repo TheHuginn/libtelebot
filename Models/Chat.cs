@@ -70,3 +70,47 @@ public record ChatPhoto(
     [property: JsonPropertyName("big_file_unique_id")]
     string BigFileUniqueId
 );
+
+public record ChatPermissions(
+    [property: JsonPropertyName("can_send_messages")]
+    bool? CanSendMessages,
+
+    [property: JsonPropertyName("can_send_audios")]
+    bool? CanSendAudios,
+
+    [property: JsonPropertyName("can_send_documents")]
+    bool? CanSendDocuments,
+
+    [property: JsonPropertyName("can_send_photos")]
+    bool? CanSendPhotos,
+
+    [property: JsonPropertyName("can_send_videos")]
+    bool? CanSendVideos,
+
+    [property: JsonPropertyName("can_send_video_notes")]
+    bool? CanSendVideoNotes,
+
+    [property: JsonPropertyName("can_send_voice_notes")]
+    bool? CanSendVoiceNotes,
+
+    [property: JsonPropertyName("can_send_polls")]
+    bool? CanSendPolls,
+
+    [property: JsonPropertyName("can_send_other_messages")]
+    bool? CanSendOtherMessages,
+
+    [property: JsonPropertyName("can_add_web_page_previews")]
+    bool? CanAddWebPagePreviews,
+
+    [property: JsonPropertyName("can_change_info")]
+    bool? CanChangeInfo,
+
+    [property: JsonPropertyName("can_invite_users")]
+    bool? CanInviteUsers,
+
+    [property: JsonPropertyName("can_pin_messages")]
+    bool? CanPinMessages,
+
+    [property: JsonPropertyName("can_manage_topics")]
+    bool? CanManageTopics
+);
