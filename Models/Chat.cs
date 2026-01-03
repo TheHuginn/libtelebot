@@ -36,3 +36,23 @@ public record ChatMemberUpdated(
     [property: JsonPropertyName("from")]
     User From
 );
+
+public record Location(
+    [property: JsonPropertyName("latitude")]
+    double Latitude,
+
+    [property: JsonPropertyName("longitude")]
+    double Longitude,
+
+    [property: JsonPropertyName("horizontal_accuracy")]
+    double? HorizontalAccuracy,
+
+    [property: JsonPropertyName("live_period")]
+    int? LivePeriod,
+
+    [property: JsonPropertyName("heading")]
+    int? Heading,
+
+    [property: JsonPropertyName("proximity_alert_radius")]
+    int? ProximityAlertRadius
+);
