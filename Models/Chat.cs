@@ -55,6 +55,7 @@ public record Location(
 
     [property: JsonPropertyName("proximity_alert_radius")]
     int? ProximityAlertRadius
+);
 
 public record ChatPhoto(
     [property: JsonPropertyName("small_file_id")]
