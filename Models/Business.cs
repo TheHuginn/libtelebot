@@ -43,3 +43,11 @@ public record BusinessConnection(
     [property: JsonPropertyName("is_enabled")]
     bool IsEnabled
 );
+
+public record BusinessLocation(
+    [property: JsonPropertyName("address")]
+    string Address,
+
+    [property: JsonPropertyName("location")]
+    Location? Location
+);
