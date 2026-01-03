@@ -7,7 +7,7 @@ public interface ITelegramClient
 {
     Task<User> GetMeAsync(GetMeRequestParams requestParams);
     Task<IReadOnlyList<Update>> GetUpdatesAsync(GetUpdatesRequestParams requestParams);
-    Task<Message> SendMessageAync(SendMessageRequestParams requestParams);
+    Task<Message> SendMessageAsync(SendMessageRequestParams requestParams);
     Task<Message> SendPhotoAsync(SendPhotoRequestParams requestParams);
 }
 
