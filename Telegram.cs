@@ -39,7 +39,7 @@ public sealed partial class Telegram : ITelegramClient
         return await _transport.RequestAsync<IReadOnlyList<Update>>(requestParams, _token);
     }
 
-    public async Task<Message> SendMessageAync(SendMessageRequestParams requestParams)
+    public async Task<Message> SendMessageAsync(SendMessageRequestParams requestParams)
     {
         return await _transport.RequestAsync<Message>(requestParams, _token);
     }
