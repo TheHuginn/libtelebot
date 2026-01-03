@@ -36,3 +36,17 @@ public record ChatMemberUpdated(
     [property: JsonPropertyName("from")]
     User From
 );
+
+public record ChatPhoto(
+    [property: JsonPropertyName("small_file_id")]
+    string SmallFileId,
+
+    [property: JsonPropertyName("small_file_unique_id")]
+    string SmallFileUniqueId,
+
+    [property: JsonPropertyName("big_file_id")]
+    string BigFileId,
+
+    [property: JsonPropertyName("big_file_unique_id")]
+    string BigFileUniqueId
+);
