@@ -135,3 +135,49 @@ public sealed record SendPhotoRequestParams(
         yield return new TelegramRequestFile("photo", Photo);
     }
 }
+
+public sealed record SetWebhookRequestParams(
+    string Url,
+    InputFileWithStream? Certificate = null,
+    string? IpAddress = null,
+    int? MaxConnections = null,
+    IReadOnlyList<string>? AllowedUpdates = null,
+    bool? DropPendingUpdates = null,
+    string? SecretToken = null
+) : TelegramRequest("setWebhook")
+{
+    public override IEnumerable<TelegramRequestField> GetRequestFields()
+    {
+        yield return new TelegramRequestField("url", Url);
+
+        if (IpAddress is not null)
+            yield return new TelegramRequestField("ip_address", IpAddress);
+
+        if (MaxConnections is not null)
+            yield return new TelegramRequestField(
+                "max_connections",
+                MaxConnections.Value.ToString()
+            );
+
+        if (AllowedUpdates is not null)
+            yield return new TelegramRequestField(
+                "allowed_updates",
+                JsonSerializer.Serialize(AllowedUpdates)
+            );
+
+        if (DropPendingUpdates is not null)
+            yield return new TelegramRequestField(
+                "drop_pending_updates",
+                DropPendingUpdates.Value ? "true" : "false"
+            );
+
+        if (SecretToken is not null)
+            yield return new TelegramRequestField("secret_token", SecretToken);
+    }
+
+    public override IEnumerable<TelegramRequestFile> GetRequestFiles()
+    {
+        if (Certificate is not null)
+            yield return new TelegramRequestFile("certificate", Certificate);
+    }
+}
