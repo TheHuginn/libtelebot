@@ -8,7 +8,8 @@ public interface ITelegramClient
     Task<User> GetMeAsync(GetMeRequestParams requestParams);
     Task<IReadOnlyList<Update>> GetUpdatesAsync(GetUpdatesRequestParams requestParams);
     Task<Message> SendMessageAsync(SendMessageRequestParams requestParams);
-    Task<Message> SendPhotoAsync(SendPhotoRequestParams requestParams);
+    Task<Message> SendPhotoAsync(SendPhotoRequestParams requestParams); 
+    Task<bool> SetWebhookAsync(SetWebhookRequestParams requestParams);
 }
 
 public class TelebotException(int? code, string message) : Exception(message)
@@ -23,7 +24,7 @@ public sealed partial class Telegram : ITelegramClient
     
     public Telegram(string token) : this(new DefaultTelegramTransport(), token){}
 
-    internal Telegram(ITelegramTransport transport, string token)
+    public Telegram(ITelegramTransport transport, string token)
     {
         _transport = transport;
         _token = token;
@@ -47,5 +48,10 @@ public sealed partial class Telegram : ITelegramClient
     public async Task<Message> SendPhotoAsync(SendPhotoRequestParams requestParams)
     {
         return await _transport.RequestAsync<Message>(requestParams, _token);
+    }
+
+    public async Task<bool> SetWebhookAsync(SetWebhookRequestParams requestParams)
+    {
+        return await _transport.RequestAsync<bool>(requestParams, _token);
     }
 }
