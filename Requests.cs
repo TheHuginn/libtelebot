@@ -47,6 +47,7 @@ public sealed record GetUpdatesRequestParams(
 public sealed record SendMessageRequestParams(
     long ChatId,
     string Text,
+    int? MessageThreadId = null,
     string? ParseMode = null,
     bool? DisableNotification = null,
     bool? ProtectContent = null,
@@ -58,7 +59,9 @@ public sealed record SendMessageRequestParams(
     {
         yield return new TelegramRequestField("chat_id", ChatId.ToString());
         yield return new TelegramRequestField("text", Text);
-
+        
+        if(MessageThreadId is not null)
+            yield return new TelegramRequestField("message_thread_id", MessageThreadId.Value.ToString());
         if (ParseMode is not null)
             yield return new TelegramRequestField("parse_mode", ParseMode);
         if (DisableNotification is not null)
