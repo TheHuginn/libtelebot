@@ -3,11 +3,7 @@ using System.Text.Json;
 namespace Telebot;
 
 //Allows request encoding to Form/Multipart
-public interface ITelegramEncodable
-{
-    IEnumerable<TelegramRequestField> GetRequestFields();
-    IEnumerable<TelegramRequestFile> GetRequestFiles();
-}
+
 
 //Base for every request
 public record TelegramRequest(string Endpoint) : ITelegramEncodable
