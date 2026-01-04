@@ -4,10 +4,10 @@ namespace Telebot.Models;
 
 public record Message(
     [property: JsonPropertyName("message_id")]
-    long MessageId,
+    int MessageId,
 
     [property: JsonPropertyName("message_thread_id")]
-    long? MessageThreadId,
+    int? MessageThreadId,
 
     [property: JsonPropertyName("from")]
     User? From,
