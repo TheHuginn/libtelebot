@@ -28,7 +28,7 @@ public interface ITelegramEncodable
 
 public interface ITelegramTransport
 {
-    public Task<T> RequestAsync<T>(TelegramRequest requestParams, string token);
+    public Task<T> RequestAsync<T>(TelegramRequest requestParams, string token, CancellationToken cancellationToken);
 }
 
 public class DefaultTelegramTransport : ITelegramTransport
@@ -121,7 +121,7 @@ public class DefaultTelegramTransport : ITelegramTransport
         };
     }
 
-    public async Task<T> RequestAsync<T>(TelegramRequest request, string token)
+    public async Task<T> RequestAsync<T>(TelegramRequest request, string token, CancellationToken cancellationToken)
     {
         var fields = request.GetRequestFields().ToList();
         var files  = request.GetRequestFiles().ToList();
@@ -135,7 +135,7 @@ public class DefaultTelegramTransport : ITelegramTransport
             UriKind.Relative
         );
 
-        using var response = await _httpClient.SendAsync(message);
+        using var response = await _httpClient.SendAsync(message, cancellationToken);
 
         // HTTP / transport errors
         if (!response.IsSuccessStatusCode)
