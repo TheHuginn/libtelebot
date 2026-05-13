@@ -6,6 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Telebot</RootNamespace>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Bucketlab.Telebot</PackageId>
+    <Version>0.0.2</Version>
+    <Authors>TheHuginn</Authors>
+    <Company>Bucketlab</Company>
+    <Description>Библиотека клиент для телеграм</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 </Project>
