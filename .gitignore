@@ -2,6 +2,8 @@
 .env
 *.env
 .env.local
+.nuget
+nugpush.sh
 
 # .NET
 bin/

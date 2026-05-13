@@ -9,7 +9,7 @@
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Bucketlab.Telebot</PackageId>
-    <Version>0.0.2</Version>
+    <Version>0.0.3</Version>
     <Authors>TheHuginn</Authors>
     <Company>Bucketlab</Company>
     <Description>Библиотека клиент для телеграм</Description>
