@@ -72,6 +72,13 @@ namespace Telebot.Models;
 /// <param name="Text">
 /// Текст сообщения (UTF-8). Для текстовых сообщений — до 4096 символов.
 /// </param>
+/// <param name="Entities">
+/// Специальные сущности в тексте сообщения — упоминания, хэштеги, URL,
+/// форматирование и т. п. Заполняется только для текстовых сообщений
+/// и только если такие сущности присутствуют. Соответствует полю
+/// <c>entities</c> в Telegram Bot API; элементы массива описаны
+/// типом <see cref="MessageEntity"/>.
+/// </param>
 public record Message(
     [property: JsonPropertyName("message_id")]
     int MessageId,
