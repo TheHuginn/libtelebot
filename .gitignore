@@ -1,0 +1,17 @@
+# Secrets
+.env
+*.env
+.env.local
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# JetBrains
+.idea/
+
+# VS Code
+.vscode/
