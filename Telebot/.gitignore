@@ -2,3 +2,5 @@ obj
 .idea
 bin
 .git
+.env
+.nuget
