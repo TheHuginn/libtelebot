@@ -1,21 +1,7 @@
-using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace Telebot;
-
-/// <summary>
-/// Представляет одно текстовое поле запроса к Telegram Bot API
-/// (например, <c>chat_id=123</c> или <c>text=Hello</c>).
-/// Используется для сериализации параметров в form-urlencoded
-/// или multipart-форму.
-/// </summary>
-/// <param name="Name">Имя параметра, как его ожидает Telegram API.</param>
-/// <param name="Value">Строковое значение параметра.</param>
-public record TelegramRequestField(
-    string Name,
-    string Value
-);
 
 /// <summary>
 /// Абстракция для входного файла, отправляемого в Telegram.
@@ -53,6 +39,19 @@ public sealed record InputFileWithUrl(Uri Url) : InputFile;
 /// <param name="ContentType">MIME-тип содержимого (например, <c>image/jpeg</c>).</param>
 /// <param name="FileName">Имя файла, попадающее в заголовок <c>filename</c> части multipart.</param>
 public sealed record InputFileWithStream(Stream Stream, string ContentType, string FileName) : InputFile;
+
+/// <summary>
+/// Представляет одно текстовое поле запроса к Telegram Bot API
+/// (например, <c>chat_id=123</c> или <c>text=Hello</c>).
+/// Используется для сериализации параметров в form-urlencoded
+/// или multipart-форму.
+/// </summary>
+/// <param name="Name">Имя параметра, как его ожидает Telegram API.</param>
+/// <param name="Value">Строковое значение параметра.</param>
+public record TelegramRequestField(
+    string Name,
+    string Value
+);
 
 /// <summary>
 /// Связывает имя поля файла, как его ожидает Telegram (например, <c>photo</c>),
