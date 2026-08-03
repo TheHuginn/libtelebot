@@ -114,6 +114,67 @@ public sealed record GetUpdatesRequestParams(
 }
 
 /// <summary>
+/// Параметры ответа на сообщение для метода <c>sendMessage</c> и других методов
+/// отправки (см. <see href="https://core.telegram.org/bots/api#replyparameters"/>).
+/// </summary>
+/// <remarks>
+/// Заменяет устаревшую пару <c>reply_to_message_id</c> + <c>allow_sending_without_reply</c>
+/// (введено в Bot API 7.0, декабрь 2023). Позволяет не только сослаться на сообщение,
+/// но и:
+/// <list type="bullet">
+///   <item><description>отвечать на сообщение из другого чата — через <see cref="ChatId"/>;</description></item>
+///   <item><description>подсветить в цитате конкретный фрагмент — через <see cref="Quote"/> и <see cref="QuotePosition"/>.</description></item>
+/// </list>
+/// В Telegram Bot API этот объект передаётся как JSON-строка в поле формы
+/// <c>reply_parameters</c> — сериализацию выполняет вызывающий запрос
+/// (см. <see cref="SendMessageRequestParams.GetRequestFields"/>).
+/// </remarks>
+/// <param name="MessageId">
+/// Идентификатор сообщения, на которое отвечаем в текущем чате
+/// (или в <see cref="ChatId"/>, если он указан). Обязателен, если не задан
+/// <see cref="EphemeralMessageId"/>.
+/// </param>
+/// <param name="ChatId">
+/// Идентификатор чата, из которого сообщение-цель, если оно не в текущем чате.
+/// В API поле принимает как число, так и строку <c>@username</c>; здесь оставлен
+/// только числовой вариант ради консистентности с остальным API библиотеки.
+/// </param>
+/// <param name="EphemeralMessageId">
+/// Идентификатор входящего эфемерного сообщения-цели в текущем чате.
+/// Альтернатива <see cref="MessageId"/>: одно из двух обязано быть задано.
+/// </param>
+/// <param name="AllowSendingWithoutReply">
+/// Если <c>true</c>, сообщение всё равно будет отправлено, даже если цель ответа
+/// не найдена (удалена и т.п.).
+/// </param>
+/// <param name="Quote">
+/// Цитируемый фрагмент исходного сообщения, 0–1024 символа после разбора форматирования.
+/// </param>
+/// <param name="QuoteParseMode">
+/// Режим разбора разметки в <see cref="Quote"/>.
+/// </param>
+/// <param name="QuotePosition">
+/// Позиция цитаты в исходном сообщении в UTF-16 code units.
+/// </param>
+/// <param name="ChecklistTaskId">
+/// Идентификатор конкретной задачи чек-листа, на которую отвечаем.
+/// </param>
+/// <param name="PollOptionId">
+/// Устойчивый идентификатор конкретного варианта опроса, на который отвечаем.
+/// </param>
+public sealed record ReplyParameters(
+    [property: JsonPropertyName("message_id")] int? MessageId = null,
+    [property: JsonPropertyName("chat_id")] long? ChatId = null,
+    [property: JsonPropertyName("ephemeral_message_id")] int? EphemeralMessageId = null,
+    [property: JsonPropertyName("allow_sending_without_reply")] bool? AllowSendingWithoutReply = null,
+    [property: JsonPropertyName("quote")] string? Quote = null,
+    [property: JsonPropertyName("quote_parse_mode")] string? QuoteParseMode = null,
+    [property: JsonPropertyName("quote_position")] int? QuotePosition = null,
+    [property: JsonPropertyName("checklist_task_id")] int? ChecklistTaskId = null,
+    [property: JsonPropertyName("poll_option_id")] string? PollOptionId = null
+);
+
+/// <summary>
 /// Параметры вызова метода <c>sendMessage</c> — отправка текстового сообщения
 /// в чат. <see cref="ChatId"/> и <see cref="Text"/> обязательны, остальные
 /// поля управляют форматированием, уведомлениями и привязкой к ответам.
@@ -134,12 +195,10 @@ public sealed record GetUpdatesRequestParams(
 /// <param name="ProtectContent">
 /// Если <c>true</c>, Telegram запретит пересылку и сохранение сообщения.
 /// </param>
-/// <param name="ReplyToMessageId">
-/// Идентификатор сообщения, на которое отвечаем — в чате появится цитата-привязка.
-/// </param>
-/// <param name="AllowSendingWithoutReply">
-/// Если <c>true</c>, сообщение всё равно будет отправлено, даже если
-/// <see cref="ReplyToMessageId"/> указывает на удалённое сообщение.
+/// <param name="ReplyParameters">
+/// Параметры ответа на другое сообщение (см. <see cref="Telebot.ReplyParameters"/>).
+/// Пришли на смену устаревшим <c>reply_to_message_id</c> и
+/// <c>allow_sending_without_reply</c> в Bot API 7.0.
 /// </param>
 public sealed record SendMessageRequestParams(
     long ChatId,
@@ -148,14 +207,15 @@ public sealed record SendMessageRequestParams(
     string? ParseMode = null,
     bool? DisableNotification = null,
     bool? ProtectContent = null,
-    int? ReplyToMessageId = null,
-    bool? AllowSendingWithoutReply = null
+    ReplyParameters? ReplyParameters = null
 ) : TelegramRequest("sendMessage")
 {
     /// <summary>
     /// Обязательные поля (chat_id, text) выдаются всегда; остальные —
     /// только если явно заданы. Булевы значения сериализуются как литералы
     /// <c>"true"</c>/<c>"false"</c>, как этого требует Bot API.
+    /// <see cref="ReplyParameters"/> уходит как JSON-строка: Telegram ожидает
+    /// именно такое представление составного объекта в form-запросе.
     /// </summary>
     public override IEnumerable<TelegramRequestField> GetRequestFields()
     {
@@ -172,12 +232,9 @@ public sealed record SendMessageRequestParams(
         if (ProtectContent is not null)
             yield return new TelegramRequestField("protect_content",
                 ProtectContent.Value ? "true" : "false");
-        if (ReplyToMessageId is not null)
-            yield return new TelegramRequestField("reply_to_message_id", ReplyToMessageId.Value.ToString());
-        if (AllowSendingWithoutReply is not null)
-            yield return new TelegramRequestField("allow_sending_without_reply",
-                AllowSendingWithoutReply.Value ? "true" : "false");
-
+        if (ReplyParameters is not null)
+            yield return new TelegramRequestField("reply_parameters",
+                JsonSerializer.Serialize(ReplyParameters));
     }
 }
 
