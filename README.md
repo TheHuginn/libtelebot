@@ -1,16 +1,22 @@
 # Bucketlab.Telebot
 
-Типобезопасная библиотека-клиент для [Telegram Bot API](https://core.telegram.org/bots/api) на .NET 9.
+[![NuGet](https://img.shields.io/nuget/v/Bucketlab.Telebot.svg)](https://www.nuget.org/packages/Bucketlab.Telebot)
+[![Downloads](https://img.shields.io/nuget/dt/Bucketlab.Telebot.svg)](https://www.nuget.org/packages/Bucketlab.Telebot)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![.NET](https://img.shields.io/badge/.NET-9.0-512BD4)](https://dotnet.microsoft.com/)
 
-Вместо «универсального» вызова с произвольным именем метода и словарём параметров каждый endpoint описан отдельной моделью запроса и типизированным результатом — сигнатуру проверяет компилятор.
+**Bucketlab.Telebot** — простой и понятный клиент Telegram Bot API для .NET. Забираешь токен у BotFather, подключаешь пакет — и через 10 строк кода у тебя живой бот.
 
-## Особенности
+Библиотека делает одно и делает это хорошо: превращает вызовы Telegram Bot API в обычные C#-методы с нормальными типами. Никакой магии, никаких `dynamic`, никакой ручной сборки multipart-запросов.
 
-- Отдельная модель запроса на каждый endpoint (`SendMessageRequestParams`, `SendPhotoRequestParams`, …).
-- Типизированные ответы: `GetMeAsync` возвращает `User`, `SendMessageAsync` — `Message` и т.д.
-- Файлы можно передавать тремя способами: `InputFileWithId`, `InputFileWithUrl`, `InputFileWithStream` — транспорт сам выберет form-urlencoded или multipart.
-- Единое исключение `TelebotException` для сетевых, протокольных и прикладных ошибок.
-- Разделение клиента (`ITelegramClient`) и транспорта (`ITelegramTransport`) — легко подменить на мок в тестах.
+## Почему Bucketlab.Telebot
+
+- **Тонкий слой над API** — методы называются как в документации Telegram (`SendMessageAsync`, `SendPhotoAsync`, `SetWebhookAsync`), учить нечего.
+- **Типобезопасно** — параметры и ответы описаны C#-типами, IDE подсказывает поля, компилятор ловит опечатки.
+- **Работает с файлами из коробки** — отправляй фото по `file_id`, по URL или загружай поток, транспорт сам разберётся с multipart.
+- **Одно исключение на все ошибки** — `TelebotException` с кодом, ловится в одном `catch`.
+- **Ноль зависимостей сверху** — только `System.Net.Http` и `System.Text.Json`, никакого DI-контейнера, никаких обязательных фреймворков.
+- **.NET 9, nullable enabled** — современный C# без легаси.
 
 ## Установка
 
@@ -18,17 +24,13 @@
 dotnet add package Bucketlab.Telebot
 ```
 
-## Пример: эхо-бот
+## Быстрый старт: эхо-бот
 
 ```csharp
 using Telebot;
 using Telebot.Models;
 
 var bot = new Telegram("BOT_TOKEN");
-
-var me = await bot.GetMeAsync(new GetMeRequestParams(), CancellationToken.None);
-Console.WriteLine($"Started as @{me.Username}");
-
 var offset = 0;
 
 while (true)
@@ -56,34 +58,37 @@ while (true)
 }
 ```
 
-## Обработка ошибок
+Запусти — и бот отвечает на любое сообщение.
 
-Все сбои (сеть, невалидный JSON, `ok: false` от Telegram) сводятся к одному исключению:
+## Что уже поддерживается
+
+| Метод | Описание |
+|---|---|
+| `getMe` | информация о боте, проверка токена |
+| `getUpdates` | long-polling новых событий |
+| `sendMessage` | отправка текстовых сообщений |
+| `sendPhoto` | отправка фото (file_id / URL / поток) |
+| `sendPoll` | отправка опросов |
+| `setWebhook` | регистрация webhook-URL |
+
+Список будет расти — методы добавляются по мере необходимости.
+
+## Обработка ошибок
 
 ```csharp
 try
 {
     await bot.SendMessageAsync(
-        new SendMessageRequestParams(ChatId: 123, Text: "test"),
+        new SendMessageRequestParams(ChatId: 123, Text: "hi"),
         CancellationToken.None
     );
 }
 catch (TelebotException ex)
 {
-    // ex.Code — HTTP-статус или error_code от Telegram
     Console.WriteLine($"{ex.Code}: {ex.Message}");
 }
 ```
 
-## Поддерживаемые методы
-
-- `getMe`
-- `getUpdates`
-- `sendMessage`
-- `sendPhoto`
-- `sendPoll`
-- `setWebhook`
-
 ## Лицензия
 
-MIT
+MIT © Bucketlab
