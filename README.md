@@ -60,6 +60,67 @@ while (true)
 
 Запусти — и бот отвечает на любое сообщение.
 
+## Кнопки под сообщением
+
+Инлайн-клавиатура — двумерный массив: внешний уровень задаёт ряды, внутренний — кнопки в ряду. Ниже — сообщение с тремя кнопками в раскладке `[[A, B] [C]]`: первый ряд из двух кнопок, второй — из одной.
+
+```csharp
+using Telebot;
+
+var bot = new Telegram("BOT_TOKEN");
+
+var keyboard = new InlineKeyboardMarkup(new[]
+{
+    new[]
+    {
+        new InlineKeyboardButton("A", CallbackData: "choice:a"),
+        new InlineKeyboardButton("B", CallbackData: "choice:b"),
+    },
+    new[]
+    {
+        new InlineKeyboardButton("C", CallbackData: "choice:c"),
+    },
+});
+
+await bot.SendMessageAsync(
+    new SendMessageRequestParams(
+        ChatId: 123456789,
+        Text: "Привет! Выбери один из вариантов",
+        ReplyMarkup: keyboard
+    ),
+    CancellationToken.None
+);
+```
+
+`CallbackData` вернётся в апдейте `callback_query`, когда пользователь нажмёт кнопку. Помимо инлайн-клавиатуры доступны `ReplyKeyboardMarkup`, `ReplyKeyboardRemove` и `ForceReply` — все реализуют `IReplyMarkup` и подставляются в то же поле `ReplyMarkup`.
+
+## Опросы
+
+Опрос описывается вопросом и списком вариантов ответа (2–10 штук). Каждый вариант — отдельный `InputPollOption`.
+
+```csharp
+using Telebot;
+
+var bot = new Telegram("BOT_TOKEN");
+
+await bot.SendPollAsync(
+    new SendPollRequestParams(
+        ChatId: 123456789,
+        Question: "Какой язык лучше для CLI-утилит?",
+        Options: new[]
+        {
+            new InputPollOption("Go"),
+            new InputPollOption("Rust"),
+            new InputPollOption("C#"),
+            new InputPollOption("Python"),
+        }
+    ),
+    CancellationToken.None
+);
+```
+
+Метод вернёт `Message` с уже заполненным `Poll` — оттуда можно взять `poll.Id`, если нужно потом закрыть опрос или отследить голоса.
+
 ## Что уже поддерживается
 
 | Метод | Описание |
