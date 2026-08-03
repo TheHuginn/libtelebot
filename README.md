@@ -1,6 +1,16 @@
 # Bucketlab.Telebot
 
-Типобезопасная библиотека для Telegram Bot API на .NET.
+Типобезопасная библиотека-клиент для [Telegram Bot API](https://core.telegram.org/bots/api) на .NET 9.
+
+Вместо «универсального» вызова с произвольным именем метода и словарём параметров каждый endpoint описан отдельной моделью запроса и типизированным результатом — сигнатуру проверяет компилятор.
+
+## Особенности
+
+- Отдельная модель запроса на каждый endpoint (`SendMessageRequestParams`, `SendPhotoRequestParams`, …).
+- Типизированные ответы: `GetMeAsync` возвращает `User`, `SendMessageAsync` — `Message` и т.д.
+- Файлы можно передавать тремя способами: `InputFileWithId`, `InputFileWithUrl`, `InputFileWithStream` — транспорт сам выберет form-urlencoded или multipart.
+- Единое исключение `TelebotException` для сетевых, протокольных и прикладных ошибок.
+- Разделение клиента (`ITelegramClient`) и транспорта (`ITelegramTransport`) — легко подменить на мок в тестах.
 
 ## Установка
 
@@ -8,85 +18,23 @@
 dotnet add package Bucketlab.Telebot
 ```
 
----
-
-# Создание клиента
-
-```csharp
-using Telebot;
-
-var bot = new Telegram("TOKEN");
-```
-
----
-
-# GetMe
+## Пример: эхо-бот
 
 ```csharp
 using Telebot;
 using Telebot.Models;
 
-var bot = new Telegram("TOKEN");
+var bot = new Telegram("BOT_TOKEN");
 
-var me = await bot.GetMeAsync(
-    new GetMeRequestParams(),
-    CancellationToken.None
-);
-
-Console.WriteLine(me.Username);
-```
-
----
-
-# SendMessage
-
-```csharp
-using Telebot;
-using Telebot.Models;
-
-var bot = new Telegram("TOKEN");
-
-await bot.SendMessageAsync(
-    new SendMessageRequestParams(
-        ChatId: 123456789,
-        Text: "Привет"
-    ),
-    CancellationToken.None
-);
-```
-
-С parse mode:
-
-```csharp
-await bot.SendMessageAsync(
-    new SendMessageRequestParams(
-        ChatId: 123456789,
-        Text: "<b>Hello</b>",
-        ParseMode: "HTML"
-    ),
-    CancellationToken.None
-);
-```
-
----
-
-# GetUpdates
-
-```csharp
-using Telebot;
-using Telebot.Models;
-
-var bot = new Telegram("TOKEN");
+var me = await bot.GetMeAsync(new GetMeRequestParams(), CancellationToken.None);
+Console.WriteLine($"Started as @{me.Username}");
 
 var offset = 0;
 
 while (true)
 {
     var updates = await bot.GetUpdatesAsync(
-        new GetUpdatesRequestParams(
-            Offset: offset,
-            Timeout: 30
-        ),
+        new GetUpdatesRequestParams(Offset: offset, Timeout: 30),
         CancellationToken.None
     );
 
@@ -94,15 +42,13 @@ while (true)
     {
         offset = update.UpdateId + 1;
 
-        if (update.Message is null)
+        if (update.Message?.Text is not { } text)
             continue;
-
-        Console.WriteLine(update.Message.Text);
 
         await bot.SendMessageAsync(
             new SendMessageRequestParams(
                 ChatId: update.Message.Chat.Id,
-                Text: $"Echo: {update.Message.Text}"
+                Text: $"Echo: {text}"
             ),
             CancellationToken.None
         );
@@ -110,126 +56,34 @@ while (true)
 }
 ```
 
----
+## Обработка ошибок
 
-# SendPhoto
-
-## Отправка по file_id
-
-```csharp
-await bot.SendPhotoAsync(
-    new SendPhotoRequestParams(
-        ChatId: 123456789,
-        Photo: new InputFileWithId("FILE_ID")
-    ),
-    CancellationToken.None
-);
-```
-
----
-
-## Отправка по URL
-
-```csharp
-await bot.SendPhotoAsync(
-    new SendPhotoRequestParams(
-        ChatId: 123456789,
-        Photo: new InputFileWithUrl(
-            new Uri("https://example.com/image.jpg")
-        )
-    ),
-    CancellationToken.None
-);
-```
-
----
-
-## Отправка файла потоком
-
-```csharp
-await using var stream = File.OpenRead("./photo.jpg");
-
-await bot.SendPhotoAsync(
-    new SendPhotoRequestParams(
-        ChatId: 123456789,
-        Photo: new InputFileWithStream(
-            stream,
-            "image/jpeg",
-            "photo.jpg"
-        ),
-        Caption: "Фото"
-    ),
-    CancellationToken.None
-);
-```
-
----
-
-# SetWebhook
-
-```csharp
-await bot.SetWebhookAsync(
-    new SetWebhookRequestParams(
-        Url: "https://example.com/webhook"
-    ),
-    CancellationToken.None
-);
-```
-
----
-
-# SetWebhook с сертификатом
-
-```csharp
-await using var stream = File.OpenRead("./cert.pem");
-
-await bot.SetWebhookAsync(
-    new SetWebhookRequestParams(
-        Url: "https://example.com/webhook",
-        Certificate: new InputFileWithStream(
-            stream,
-            "application/x-pem-file",
-            "cert.pem"
-        )
-    ),
-    CancellationToken.None
-);
-```
-
----
-
-# Обработка ошибок
+Все сбои (сеть, невалидный JSON, `ok: false` от Telegram) сводятся к одному исключению:
 
 ```csharp
 try
 {
     await bot.SendMessageAsync(
-        new SendMessageRequestParams(
-            ChatId: 123,
-            Text: "test"
-        ),
+        new SendMessageRequestParams(ChatId: 123, Text: "test"),
         CancellationToken.None
     );
 }
 catch (TelebotException ex)
 {
-    Console.WriteLine(ex.Code);
-    Console.WriteLine(ex.Message);
+    // ex.Code — HTTP-статус или error_code от Telegram
+    Console.WriteLine($"{ex.Code}: {ex.Message}");
 }
 ```
 
----
+## Поддерживаемые методы
 
-# Поддерживаемые методы
+- `getMe`
+- `getUpdates`
+- `sendMessage`
+- `sendPhoto`
+- `sendPoll`
+- `setWebhook`
 
-- getMe
-- getUpdates
-- sendMessage
-- sendPhoto
-- setWebhook
-
----
-
-# Лицензия
+## Лицензия
 
 MIT
