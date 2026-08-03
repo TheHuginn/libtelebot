@@ -55,6 +55,15 @@ public interface ITelegramClient
     /// </summary>
     Task<bool> SetWebhookAsync(SetWebhookRequestParams requestParams,
         CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Вызывает метод <c>sendPoll</c> — отправляет опрос с двумя-десятью
+    /// вариантами ответа. Возвращает уже отправленное <see cref="Message"/>
+    /// с проставленным сервером <c>message_id</c>; сам опрос доступен
+    /// через <see cref="Message.Poll"/>.
+    /// </summary>
+    Task<Message> SendPollAsync(SendPollRequestParams requestParams,
+        CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -152,5 +161,11 @@ public sealed class Telegram : ITelegramClient
         CancellationToken cancellationToken)
     {
         return await _transport.RequestAsync<bool>(requestParams, _token, cancellationToken);
+    }
+    
+    public async Task<Message> SendPollAsync(SendPollRequestParams requestParams,
+        CancellationToken cancellationToken)
+    {
+        return await _transport.RequestAsync<Message>(requestParams, _token, cancellationToken);
     }
 }
