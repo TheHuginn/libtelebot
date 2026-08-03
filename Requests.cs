@@ -200,6 +200,13 @@ public sealed record ReplyParameters(
 /// Пришли на смену устаревшим <c>reply_to_message_id</c> и
 /// <c>allow_sending_without_reply</c> в Bot API 7.0.
 /// </param>
+/// <param name="ReplyMarkup">
+/// Разметка под сообщением: инлайн-клавиатура, обычная клавиатура,
+/// её удаление или force-reply (см. <see cref="IReplyMarkup"/>). Union без явного
+/// тега — Telegram распознаёт вариант по маркерному полю в JSON,
+/// поэтому сериализацию каждой реализации знает она сама через
+/// <see cref="IReplyMarkup.ToJson"/>.
+/// </param>
 public sealed record SendMessageRequestParams(
     long ChatId,
     string Text,
@@ -207,15 +214,17 @@ public sealed record SendMessageRequestParams(
     string? ParseMode = null,
     bool? DisableNotification = null,
     bool? ProtectContent = null,
-    ReplyParameters? ReplyParameters = null
+    ReplyParameters? ReplyParameters = null,
+    IReplyMarkup? ReplyMarkup = null
 ) : TelegramRequest("sendMessage")
 {
     /// <summary>
     /// Обязательные поля (chat_id, text) выдаются всегда; остальные —
     /// только если явно заданы. Булевы значения сериализуются как литералы
     /// <c>"true"</c>/<c>"false"</c>, как этого требует Bot API.
-    /// <see cref="ReplyParameters"/> уходит как JSON-строка: Telegram ожидает
-    /// именно такое представление составного объекта в form-запросе.
+    /// <see cref="ReplyParameters"/> и <see cref="ReplyMarkup"/> уходят как
+    /// JSON-строки: Telegram ожидает именно такое представление составных
+    /// объектов в form-запросе.
     /// </summary>
     public override IEnumerable<TelegramRequestField> GetRequestFields()
     {
@@ -235,6 +244,8 @@ public sealed record SendMessageRequestParams(
         if (ReplyParameters is not null)
             yield return new TelegramRequestField("reply_parameters",
                 JsonSerializer.Serialize(ReplyParameters));
+        if (ReplyMarkup is not null)
+            yield return new TelegramRequestField("reply_markup", ReplyMarkup.ToJson());
     }
 }
 
