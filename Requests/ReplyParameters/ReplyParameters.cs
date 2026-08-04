@@ -52,13 +52,22 @@ namespace Telebot;
 /// Устойчивый идентификатор конкретного варианта опроса, на который отвечаем.
 /// </param>
 public sealed record ReplyParameters(
-    [property: JsonPropertyName("message_id")] int? MessageId = null,
-    [property: JsonPropertyName("chat_id")] long? ChatId = null,
-    [property: JsonPropertyName("ephemeral_message_id")] int? EphemeralMessageId = null,
-    [property: JsonPropertyName("allow_sending_without_reply")] bool? AllowSendingWithoutReply = null,
-    [property: JsonPropertyName("quote")] string? Quote = null,
-    [property: JsonPropertyName("quote_parse_mode")] string? QuoteParseMode = null,
-    [property: JsonPropertyName("quote_position")] int? QuotePosition = null,
-    [property: JsonPropertyName("checklist_task_id")] int? ChecklistTaskId = null,
-    [property: JsonPropertyName("poll_option_id")] string? PollOptionId = null
+    [property: JsonPropertyName("message_id")] 
+    int? MessageId = null,
+    [property: JsonPropertyName("chat_id")] 
+    long? ChatId = null,
+    [property: JsonPropertyName("ephemeral_message_id")] 
+    int? EphemeralMessageId = null,
+    [property: JsonPropertyName("allow_sending_without_reply")] 
+    bool? AllowSendingWithoutReply = null,
+    [property: JsonPropertyName("quote")] 
+    string? Quote = null,
+    [property: JsonPropertyName("quote_parse_mode")] 
+    string? QuoteParseMode = null,
+    [property: JsonPropertyName("quote_position")] 
+    int? QuotePosition = null,
+    [property: JsonPropertyName("checklist_task_id")] 
+    int? ChecklistTaskId = null,
+    [property: JsonPropertyName("poll_option_id")] 
+    string? PollOptionId = null
 );
