@@ -163,6 +163,7 @@ public sealed class Telegram : ITelegramClient
         return await _transport.RequestAsync<bool>(requestParams, _token, cancellationToken);
     }
     
+    /// <inheritdoc />
     public async Task<Message> SendPollAsync(SendPollRequestParams requestParams,
         CancellationToken cancellationToken)
     {

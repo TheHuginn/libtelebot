@@ -9,11 +9,15 @@
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Bucketlab.Telebot</PackageId>
-    <Version>0.0.4</Version>
+    <Version>0.0.5</Version>
     <Authors>TheHuginn</Authors>
     <Company>Bucketlab</Company>
     <Description>Библиотека клиент для телеграм</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Utils\" />
+  </ItemGroup>
 
 </Project>
