@@ -17,6 +17,10 @@ namespace Telebot;
 /// Режим разбора разметки в <see cref="Text"/>: <c>Markdown</c>, <c>MarkdownV2</c>
 /// или <c>HTML</c>. Если не задан — текст уходит как plain text.
 /// </param>
+/// <param name="LinkPreviewOptions">
+/// Настройки превью ссылок в сообщении (см. <see cref="Telebot.LinkPreviewOptions"/>).
+/// Пришли на смену устаревшему <c>disable_web_page_preview</c> в Bot API 7.0.
+/// </param>
 /// <param name="DisableNotification">
 /// Если <c>true</c>, сообщение придёт без звука — полезно для фоновых уведомлений.
 /// </param>
@@ -40,6 +44,7 @@ public sealed record SendMessageRequestParams(
     string Text,
     int? MessageThreadId = null,
     string? ParseMode = null,
+    LinkPreviewOptions? LinkPreviewOptions = null,
     bool? DisableNotification = null,
     bool? ProtectContent = null,
     ReplyParameters? ReplyParameters = null,
@@ -63,6 +68,9 @@ public sealed record SendMessageRequestParams(
             yield return new TelegramRequestField("message_thread_id", MessageThreadId.Value.ToString());
         if (ParseMode is not null)
             yield return new TelegramRequestField("parse_mode", ParseMode);
+        if (LinkPreviewOptions is not null)
+            yield return new TelegramRequestField("link_preview_options",
+                JsonSerializer.Serialize(LinkPreviewOptions));
         if (DisableNotification is not null)
             yield return new TelegramRequestField("disable_notification",
                 DisableNotification.Value ? "true" : "false");
