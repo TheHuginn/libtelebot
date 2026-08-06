@@ -41,6 +41,31 @@ public interface ITelegramClient
         CancellationToken cancellationToken);
 
     /// <summary>
+    /// Вызывает метод <c>editMessageText</c> — заменяет текст (и, опционально,
+    /// инлайн-клавиатуру) ранее отправленного сообщения. Возвращает уже
+    /// изменённое <see cref="Message"/>.
+    /// </summary>
+    Task<Message> EditMessageTextAsync(EditMessageTextRequestParams requestParams,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Вызывает метод <c>editMessageReplyMarkup</c> — меняет или снимает
+    /// инлайн-клавиатуру у ранее отправленного сообщения, не трогая его текст.
+    /// Возвращает уже изменённое <see cref="Message"/>.
+    /// </summary>
+    Task<Message> EditMessageReplyMarkupAsync(EditMessageReplyMarkupRequestParams requestParams,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Вызывает метод <c>answerCallbackQuery</c> — подтверждает приём
+    /// callback-запроса от нажатия кнопки. Возвращает <c>true</c> при успехе.
+    /// Без этого вызова у пользователя на кнопке продолжает крутиться
+    /// индикатор загрузки.
+    /// </summary>
+    Task<bool> AnswerCallbackQueryAsync(AnswerCallbackQueryRequestParams requestParams,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// Вызывает метод <c>sendPhoto</c> — отправляет фотографию.
     /// Способ задания файла (file_id, URL или поток) выбирается в
     /// <see cref="SendPhotoRequestParams.Photo"/>.
@@ -147,6 +172,27 @@ public sealed class Telegram : ITelegramClient
         CancellationToken cancellationToken)
     {
         return await _transport.RequestAsync<Message>(requestParams, _token, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<Message> EditMessageTextAsync(EditMessageTextRequestParams requestParams,
+        CancellationToken cancellationToken)
+    {
+        return await _transport.RequestAsync<Message>(requestParams, _token, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<Message> EditMessageReplyMarkupAsync(EditMessageReplyMarkupRequestParams requestParams,
+        CancellationToken cancellationToken)
+    {
+        return await _transport.RequestAsync<Message>(requestParams, _token, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> AnswerCallbackQueryAsync(AnswerCallbackQueryRequestParams requestParams,
+        CancellationToken cancellationToken)
+    {
+        return await _transport.RequestAsync<bool>(requestParams, _token, cancellationToken);
     }
 
     /// <inheritdoc />

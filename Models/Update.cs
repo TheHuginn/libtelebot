@@ -39,6 +39,12 @@ namespace Telebot.Models;
 /// Уведомление об удалении сообщений в бизнес-аккаунте,
 /// подключённом к боту.
 /// </param>
+/// <param name="CallbackQuery">
+/// Нажатие пользователем на кнопку инлайн-клавиатуры.
+/// Обработчик читает <see cref="Models.CallbackQuery.Data"/> и обязан
+/// подтвердить приём вызовом <c>answerCallbackQuery</c> — иначе на кнопке
+/// у пользователя продолжает крутиться индикатор загрузки.
+/// </param>
 /// <param name="MyChatMember">
 /// Изменение статуса самого бота как участника чата
 /// (например, бот добавлен в группу или сделан администратором).
@@ -69,6 +75,9 @@ public record Update(
 
     [property: JsonPropertyName("deleted_business_messages")]
     BusinessMessagesDeleted? DeletedBusinessMessages = null,
+
+    [property: JsonPropertyName("callback_query")]
+    CallbackQuery? CallbackQuery = null,
 
     [property: JsonPropertyName("my_chat_member")]
     ChatMemberUpdated? MyChatMember = null,
