@@ -108,21 +108,63 @@ public interface ITelegramTransport
 }
 
 /// <summary>
-/// Реализация транспорта по умолчанию: использует один статический
-/// <see cref="HttpClient"/> и общается с <c>api.telegram.org</c>
-/// через POST-запросы.
+/// Настройки <see cref="DefaultTelegramTransport"/>: адрес Bot API и таймаут HTTP-запроса.
 /// </summary>
+/// <remarks>
+/// Минимальный конфиг для нестандартных сценариев — прежде всего self-hosted
+/// Telegram Bot API server (<see href="https://github.com/tdlib/telegram-bot-api"/>),
+/// где имеет смысл поменять и адрес, и таймаут (у self-hosted лимиты выше 30 секунд).
+/// Всё, что сложнее (логирование, прокси, свой <see cref="HttpMessageHandler"/>), решается
+/// собственной реализацией <see cref="ITelegramTransport"/>, а не расширением этого record'а.
+/// </remarks>
+public sealed record DefaultTransportOptions
+{
+    /// <summary>Таймаут одного HTTP-запроса. По умолчанию 30 секунд.</summary>
+    public TimeSpan Timeout { get; init; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Базовый адрес Bot API. По умолчанию <c>https://api.telegram.org</c>.</summary>
+    public Uri BaseAddress { get; init; } = new("https://api.telegram.org");
+}
+
+/// <summary>
+/// Реализация транспорта по умолчанию: общается с Bot API через POST-запросы
+/// поверх собственного <see cref="HttpClient"/>, сконфигурированного из
+/// <see cref="DefaultTransportOptions"/>.
+/// </summary>
+/// <remarks>
+/// Транспорт задуман как долгоживущий сервис: создавай один инстанс на всё
+/// приложение (или по одному на каждого бота) и переиспользуй. Пересоздание
+/// транспорта на каждый запрос ВЕДЕТ К УТЕЧКЕ БЛЯТЬ СОКЕТОВ!!!! — это классический
+/// .NET-подводный камень (пиздец) с <see cref="HttpClient"/>, не связанный с самой библиотекой.
+/// </remarks>
 public class DefaultTelegramTransport : ITelegramTransport
 {
 
-    // Один общий HttpClient на всё время жизни процесса — рекомендуемая практика
-    // в .NET: HttpClient безопасен для многопоточного использования и переиспользует
-    // TCP-соединения. Создание нового на каждый запрос приводит к утечке сокетов.
-    private static readonly HttpClient _httpClient = new()
+    private readonly HttpClient _httpClient;
+
+    /// <summary>
+    /// Создаёт транспорт со стандартными настройками
+    /// (публичный <c>api.telegram.org</c>, таймаут 30 секунд).
+    /// </summary>
+    public DefaultTelegramTransport() : this(new DefaultTransportOptions()) {}
+
+    /// <summary>
+    /// Создаёт транспорт с пользовательскими настройками — например, чтобы
+    /// направить запросы на self-hosted Bot API server или увеличить таймаут.
+    /// </summary>
+    /// <param name="options">
+    /// Настройки транспорта. Дефолтные значения заданы на самих свойствах,
+    /// поэтому переопределяй только нужное:
+    /// <c>new DefaultTransportOptions { BaseAddress = ... }</c>.
+    /// </param>
+    public DefaultTelegramTransport(DefaultTransportOptions options)
     {
-        BaseAddress = new Uri("https://api.telegram.org"),
-        Timeout = TimeSpan.FromSeconds(30),
-    };
+        _httpClient = new HttpClient
+        {
+            BaseAddress = options.BaseAddress,
+            Timeout = options.Timeout,
+        };
+    }
 
     /// <summary>
     /// Внутренний DTO для разбора ответа Telegram. Ответ всегда имеет

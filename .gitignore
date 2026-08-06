@@ -17,3 +17,5 @@ obj/
 
 # VS Code
 .vscode/
+
+/release_notes/tmp
