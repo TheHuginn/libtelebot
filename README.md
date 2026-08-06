@@ -94,6 +94,40 @@ await bot.SendMessageAsync(
 
 `CallbackData` вернётся в апдейте `callback_query`, когда пользователь нажмёт кнопку. Помимо инлайн-клавиатуры доступны `ReplyKeyboardMarkup`, `ReplyKeyboardRemove` и `ForceReply` — все реализуют `IReplyMarkup` и подставляются в то же поле `ReplyMarkup`.
 
+### Обработка нажатий
+
+Полный цикл — поймать нажатие, погасить крутилку на кнопке и обновить сообщение:
+
+```csharp
+foreach (var update in updates)
+{
+    if (update.CallbackQuery is not { } cb)
+        continue;
+
+    // Обязательно: подтверждаем приём. Без этого у пользователя на кнопке
+    // продолжает крутиться индикатор загрузки до таймаута Telegram.
+    await bot.AnswerCallbackQueryAsync(
+        new AnswerCallbackQueryRequestParams(cb.Id, Text: "Принято"),
+        CancellationToken.None
+    );
+
+    // Опционально: переписываем сообщение — фиксируем выбор и убираем кнопки.
+    if (cb.Message is { } msg)
+    {
+        await bot.EditMessageTextAsync(
+            new EditMessageTextRequestParams(
+                ChatId: msg.Chat.Id,
+                MessageId: msg.MessageId,
+                Text: $"Ты выбрал: {cb.Data}"
+            ),
+            CancellationToken.None
+        );
+    }
+}
+```
+
+Если нужно оставить текст, но снять клавиатуру — вместо `EditMessageTextAsync` вызови `EditMessageReplyMarkupAsync` с `ReplyMarkup: null`.
+
 ## Опросы
 
 Опрос описывается вопросом и списком вариантов ответа (2–10 штук). Каждый вариант — отдельный `InputPollOption`.
@@ -121,6 +155,32 @@ await bot.SendPollAsync(
 
 Метод вернёт `Message` с уже заполненным `Poll` — оттуда можно взять `poll.Id`, если нужно потом закрыть опрос или отследить голоса.
 
+## Кастомный адрес Bot API или таймаут
+
+По умолчанию клиент ходит в `https://api.telegram.org` с таймаутом 30 секунд. Если нужно указать другой URL (переехавший домен, self-hosted [Bot API server](https://github.com/tdlib/telegram-bot-api), mock-сервер в тестах) или увеличить таймаут — передай `DefaultTransportOptions` в транспорт:
+
+```csharp
+using Telebot;
+
+var baseAddress = Environment.GetEnvironmentVariable("TELEGRAM_API_URL") is { } url
+    ? new Uri(url)
+    : new Uri("https://api.telegram.org");
+
+var transport = new DefaultTelegramTransport(new DefaultTransportOptions
+{
+    BaseAddress = baseAddress,
+    Timeout = TimeSpan.FromSeconds(60),
+});
+
+var bot = new Telegram(transport, "BOT_TOKEN");
+```
+
+Дефолты заданы прямо на свойствах `DefaultTransportOptions`, поэтому в инициализаторе указывай только то, что реально меняешь.
+
+Транспорт задуман как долгоживущий — держи один инстанс на весь процесс (или по одному на каждого бота, если ботов несколько). Пересоздание транспорта на каждый запрос ведёт к утечке сокетов; это классический подводный камень `HttpClient` в .NET, не специфика библиотеки.
+
+Если нужно что-то посложнее (прокси, свой `HttpMessageHandler`, логирование запросов) — реализуй свой `ITelegramTransport` и передай его в `new Telegram(transport, token)`. `DefaultTransportOptions` намеренно оставлен минимальным.
+
 ## Что уже поддерживается
 
 | Метод | Описание |
@@ -131,6 +191,9 @@ await bot.SendPollAsync(
 | `sendPhoto` | отправка фото (file_id / URL / поток) |
 | `sendPoll` | отправка опросов |
 | `setWebhook` | регистрация webhook-URL |
+| `editMessageText` | редактирование текста ранее отправленного сообщения |
+| `editMessageReplyMarkup` | замена или снятие инлайн-клавиатуры |
+| `answerCallbackQuery` | подтверждение приёма нажатия кнопки |
 
 Список будет расти — методы добавляются по мере необходимости.
 
