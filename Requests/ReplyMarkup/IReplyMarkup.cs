@@ -1,6 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 namespace Telebot;
 
 /// <summary>
@@ -27,18 +24,4 @@ public interface IReplyMarkup
     /// маркерное поле — без него Telegram не сможет распознать тип разметки.
     /// </summary>
     string ToJson();
-}
-
-/// <summary>
-/// Общие настройки сериализации всех вариантов <see cref="IReplyMarkup"/>:
-/// null-поля не попадают в JSON. Telegram отличает «поле не задано» от
-/// «поле со значением по умолчанию», поэтому опциональные незаданные поля
-/// нельзя выдавать явно — иначе можно случайно перезаписать поведение сервера.
-/// </summary>
-internal static class ReplyMarkupJson
-{
-    public static readonly JsonSerializerOptions Options = new()
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    };
 }

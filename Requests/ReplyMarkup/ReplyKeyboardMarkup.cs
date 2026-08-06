@@ -60,5 +60,5 @@ public sealed record ReplyKeyboardMarkup(
 ) : IReplyMarkup
 {
     /// <inheritdoc />
-    public string ToJson() => JsonSerializer.Serialize(this, ReplyMarkupJson.Options);
+    public string ToJson() => JsonSerializer.Serialize(this, TelebotJson.Options);
 }

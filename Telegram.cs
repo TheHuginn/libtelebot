@@ -1,6 +1,38 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Telebot.Models;
 
 namespace Telebot;
+
+/// <summary>
+/// Единая конфигурация <see cref="JsonSerializer"/> для всей библиотеки.
+/// Используется во всех местах, где составные объекты запроса сериализуются
+/// в JSON-строку перед укладкой в поле формы Telegram Bot API.
+/// </summary>
+/// <remarks>
+/// Ключевая настройка — <see cref="JsonIgnoreCondition.WhenWritingNull"/>:
+/// свойства со значением <c>null</c> не попадают в итоговый JSON. Telegram
+/// различает «поле не задано» и «поле со значением по умолчанию», поэтому
+/// опциональные незаданные поля нельзя выдавать явно как <c>"field": null</c>
+/// — в союз-типах (<c>reply_markup</c>) это ломает распознавание варианта,
+/// а в остальных запросах даёт лишний шум в теле и в логах.
+/// <para/>
+/// Класс <c>internal</c>: наружу опции не торчат, никакого API-сюрприза
+/// для потребителя библиотеки не создают.
+/// </remarks>
+internal static class TelebotJson
+{
+    /// <summary>
+    /// Готовый набор опций для передачи вторым аргументом в
+    /// <see cref="JsonSerializer.Serialize{TValue}(TValue, JsonSerializerOptions?)"/>.
+    /// Экземпляр один на процесс и потокобезопасен — <see cref="JsonSerializerOptions"/>
+    /// после первого использования кешируется и переиспользуется.
+    /// </summary>
+    public static readonly JsonSerializerOptions Options = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
+}
 
 /// <summary>
 /// Высокоуровневый контракт клиента Telegram Bot API: предоставляет
