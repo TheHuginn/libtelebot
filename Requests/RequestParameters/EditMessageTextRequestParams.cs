@@ -57,7 +57,7 @@ public sealed record EditMessageTextRequestParams(
             yield return new TelegramRequestField("parse_mode", ParseMode);
         if (LinkPreviewOptions is not null)
             yield return new TelegramRequestField("link_preview_options",
-                JsonSerializer.Serialize(LinkPreviewOptions));
+                JsonSerializer.Serialize(LinkPreviewOptions, TelebotJson.Options));
         if (ReplyMarkup is not null)
             yield return new TelegramRequestField("reply_markup", ReplyMarkup.ToJson());
     }

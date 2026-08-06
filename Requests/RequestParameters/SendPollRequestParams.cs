@@ -48,6 +48,6 @@ public sealed record SendPollRequestParams(
     {
         yield return new TelegramRequestField("chat_id", ChatId.ToString());
         yield return new TelegramRequestField("question", Question);
-        yield return new TelegramRequestField("options", JsonSerializer.Serialize(Options));
+        yield return new TelegramRequestField("options", JsonSerializer.Serialize(Options, TelebotJson.Options));
     }
 }

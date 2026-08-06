@@ -24,5 +24,5 @@ public sealed record ReplyKeyboardRemove(
     {
         remove_keyboard = true,
         selective = Selective,
-    }, ReplyMarkupJson.Options);
+    }, TelebotJson.Options);
 }
