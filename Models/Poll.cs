@@ -135,3 +135,49 @@ public record Poll(
     [property: JsonPropertyName("close_date")]
     long? CloseDate = null
 );
+
+/// <summary>
+/// Изменение голоса пользователя в неанонимном опросе
+/// (см. <see href="https://core.telegram.org/bots/api#pollanswer"/>).
+/// </summary>
+/// <remarks>
+/// Приходит в поле <see cref="Update.PollAnswer"/>. Присылается только для
+/// <b>неанонимных</b> опросов — в анонимных Telegram сознательно не раскрывает,
+/// кто и как проголосовал (см. <see cref="Poll.IsAnonymous"/>).
+/// <para/>
+/// Пустой массив <see cref="OptionIds"/> означает, что пользователь отозвал
+/// свой голос — это отдельное событие, не путать с «не голосовал».
+/// <para/>
+/// Голосующим может быть либо обычный пользователь (<see cref="User"/>), либо
+/// анонимный администратор канала / группы, голосующий от имени чата
+/// (<see cref="VoterChat"/>) — заполняется ровно одно из полей.
+/// </remarks>
+/// <param name="PollId">
+/// Идентификатор опроса, к которому относится голос — совпадает с <see cref="Poll.Id"/>
+/// того сообщения-опроса, за которым бот следит.
+/// </param>
+/// <param name="OptionIds">
+/// Индексы выбранных вариантов ответа (0-based) в порядке из <see cref="Poll.Options"/>.
+/// Пустой массив — пользователь отменил свой голос.
+/// </param>
+/// <param name="User">
+/// Пользователь, изменивший голос. Заполняется для неанонимного голосующего;
+/// <c>null</c>, если голос был отдан от имени чата (см. <see cref="VoterChat"/>).
+/// </param>
+/// <param name="VoterChat">
+/// Чат, от имени которого был изменён голос (анонимный админ канала / группы).
+/// <c>null</c>, если голосовал обычный пользователь.
+/// </param>
+public record PollAnswer(
+    [property: JsonPropertyName("poll_id")]
+    string PollId,
+
+    [property: JsonPropertyName("option_ids")]
+    IReadOnlyList<int> OptionIds,
+
+    [property: JsonPropertyName("user")]
+    User? User = null,
+
+    [property: JsonPropertyName("voter_chat")]
+    Chat? VoterChat = null
+);
