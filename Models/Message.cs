@@ -79,6 +79,13 @@ namespace Telebot.Models;
 /// <c>entities</c> в Telegram Bot API; элементы массива описаны
 /// типом <see cref="MessageEntity"/>.
 /// </param>
+/// <param name="Poll">
+/// Опрос, содержащийся в сообщении. Заполняется только для сообщений,
+/// отправленных методом <c>sendPoll</c> (или пришедших в чат как опрос) —
+/// у обычных текстовых сообщений и медиа поле <c>null</c>. Через это поле
+/// доступен серверный <see cref="Models.Poll.Id"/>, необходимый для
+/// подписки на <c>poll</c>/<c>poll_answer</c>-апдейты.
+/// </param>
 public record Message(
     [property: JsonPropertyName("message_id")]
     int MessageId,
@@ -126,7 +133,10 @@ public record Message(
     string? Text,
 
     [property: JsonPropertyName("entities")]
-    MessageEntity[]? Entities
+    MessageEntity[]? Entities,
+
+    [property: JsonPropertyName("poll")]
+    Poll? Poll = null
 );
 
 /// <summary>
