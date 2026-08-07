@@ -5,18 +5,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4)](https://dotnet.microsoft.com/)
 
-**Bucketlab.Telebot** — простой и понятный клиент Telegram Bot API для .NET. Забираешь токен у BotFather, подключаешь пакет — и через 10 строк кода у тебя живой бот.
+Тонкий типобезопасный клиент Telegram Bot API для .NET 9. Никакой магии, никакого `dynamic`, никакого DI-контейнера — только `System.Net.Http` и `System.Text.Json` под капотом.
 
-Библиотека делает одно и делает это хорошо: превращает вызовы Telegram Bot API в обычные C#-методы с нормальными типами. Никакой магии, никаких `dynamic`, никакой ручной сборки multipart-запросов.
-
-## Почему Bucketlab.Telebot
-
-- **Тонкий слой над API** — методы называются как в документации Telegram (`SendMessageAsync`, `SendPhotoAsync`, `SetWebhookAsync`), учить нечего.
-- **Типобезопасно** — параметры и ответы описаны C#-типами, IDE подсказывает поля, компилятор ловит опечатки.
-- **Работает с файлами из коробки** — отправляй фото по `file_id`, по URL или загружай поток, транспорт сам разберётся с multipart.
-- **Одно исключение на все ошибки** — `TelebotException` с кодом, ловится в одном `catch`.
-- **Ноль зависимостей сверху** — только `System.Net.Http` и `System.Text.Json`, никакого DI-контейнера, никаких обязательных фреймворков.
-- **.NET 9, nullable enabled** — современный C# без легаси.
+- Методы называются как в [официальной документации](https://core.telegram.org/bots/api) (`SendMessageAsync`, `EditMessageTextAsync`, …) — учить нечего.
+- Все ошибки — сетевые, HTTP, `ok=false` от Telegram — сводятся к единому `TelebotException` с полем `Code`.
+- Файлы отправляются по `file_id`, URL или потоком — транспорт сам выбирает form-urlencoded или multipart.
 
 ## Установка
 
@@ -31,44 +24,34 @@ using Telebot;
 using Telebot.Models;
 
 var bot = new Telegram("BOT_TOKEN");
-var offset = 0;
+var offset = 0L;
 
 while (true)
 {
     var updates = await bot.GetUpdatesAsync(
         new GetUpdatesRequestParams(Offset: offset, Timeout: 30),
-        CancellationToken.None
-    );
+        CancellationToken.None);
 
     foreach (var update in updates)
     {
         offset = update.UpdateId + 1;
 
-        if (update.Message?.Text is not { } text)
-            continue;
+        if (update.Message?.Text is not { } text) continue;
 
         await bot.SendMessageAsync(
-            new SendMessageRequestParams(
-                ChatId: update.Message.Chat.Id,
-                Text: $"Echo: {text}"
-            ),
-            CancellationToken.None
-        );
+            new SendMessageRequestParams(update.Message.Chat.Id, $"Echo: {text}"),
+            CancellationToken.None);
     }
 }
 ```
 
-Запусти — и бот отвечает на любое сообщение.
+Всё, что нужно: токен от BotFather, цикл `getUpdates` с монотонным `offset`, отправка ответа.
 
-## Кнопки под сообщением
+## Кнопки и обработка нажатий
 
-Инлайн-клавиатура — двумерный массив: внешний уровень задаёт ряды, внутренний — кнопки в ряду. Ниже — сообщение с тремя кнопками в раскладке `[[A, B] [C]]`: первый ряд из двух кнопок, второй — из одной.
+Инлайн-клавиатура — двумерный массив: внешний уровень задаёт ряды, внутренний — кнопки в ряду.
 
 ```csharp
-using Telebot;
-
-var bot = new Telegram("BOT_TOKEN");
-
 var keyboard = new InlineKeyboardMarkup(new[]
 {
     new[]
@@ -76,110 +59,109 @@ var keyboard = new InlineKeyboardMarkup(new[]
         new InlineKeyboardButton("A", CallbackData: "choice:a"),
         new InlineKeyboardButton("B", CallbackData: "choice:b"),
     },
-    new[]
-    {
-        new InlineKeyboardButton("C", CallbackData: "choice:c"),
-    },
+    new[] { new InlineKeyboardButton("C", CallbackData: "choice:c") },
 });
 
 await bot.SendMessageAsync(
-    new SendMessageRequestParams(
-        ChatId: 123456789,
-        Text: "Привет! Выбери один из вариантов",
-        ReplyMarkup: keyboard
-    ),
-    CancellationToken.None
-);
+    new SendMessageRequestParams(chatId, "Выбери вариант", ReplyMarkup: keyboard),
+    CancellationToken.None);
 ```
 
-`CallbackData` вернётся в апдейте `callback_query`, когда пользователь нажмёт кнопку. Помимо инлайн-клавиатуры доступны `ReplyKeyboardMarkup`, `ReplyKeyboardRemove` и `ForceReply` — все реализуют `IReplyMarkup` и подставляются в то же поле `ReplyMarkup`.
-
-### Обработка нажатий
-
-Полный цикл — поймать нажатие, погасить крутилку на кнопке и обновить сообщение:
+При нажатии Telegram пришлёт апдейт `callback_query`. Обязательный шаг — подтвердить приём, иначе на кнопке продолжает крутиться индикатор:
 
 ```csharp
-foreach (var update in updates)
+if (update.CallbackQuery is { } cb)
 {
-    if (update.CallbackQuery is not { } cb)
-        continue;
-
-    // Обязательно: подтверждаем приём. Без этого у пользователя на кнопке
-    // продолжает крутиться индикатор загрузки до таймаута Telegram.
     await bot.AnswerCallbackQueryAsync(
         new AnswerCallbackQueryRequestParams(cb.Id, Text: "Принято"),
-        CancellationToken.None
-    );
+        CancellationToken.None);
 
-    // Опционально: переписываем сообщение — фиксируем выбор и убираем кнопки.
     if (cb.Message is { } msg)
     {
         await bot.EditMessageTextAsync(
-            new EditMessageTextRequestParams(
-                ChatId: msg.Chat.Id,
-                MessageId: msg.MessageId,
-                Text: $"Ты выбрал: {cb.Data}"
-            ),
-            CancellationToken.None
-        );
+            new EditMessageTextRequestParams(msg.Chat.Id, msg.MessageId, $"Ты выбрал: {cb.Data}"),
+            CancellationToken.None);
     }
 }
 ```
 
-Если нужно оставить текст, но снять клавиатуру — вместо `EditMessageTextAsync` вызови `EditMessageReplyMarkupAsync` с `ReplyMarkup: null`.
+Помимо `InlineKeyboardMarkup` доступны `ReplyKeyboardMarkup`, `ReplyKeyboardRemove` и `ForceReply` — все реализуют `IReplyMarkup` и подставляются в то же поле.
 
 ## Опросы
 
-Опрос описывается вопросом и списком вариантов ответа (2–10 штук). Каждый вариант — отдельный `InputPollOption`.
-
 ```csharp
-using Telebot;
-
-var bot = new Telegram("BOT_TOKEN");
-
-await bot.SendPollAsync(
+var sent = await bot.SendPollAsync(
     new SendPollRequestParams(
-        ChatId: 123456789,
+        ChatId: chatId,
         Question: "Какой язык лучше для CLI-утилит?",
         Options: new[]
         {
             new InputPollOption("Go"),
             new InputPollOption("Rust"),
             new InputPollOption("C#"),
-            new InputPollOption("Python"),
-        }
-    ),
-    CancellationToken.None
-);
+        }),
+    CancellationToken.None);
+
+// Закрыть опрос и получить финальную статистику:
+var closed = await bot.StopPollAsync(
+    new StopPollRequestParams(sent.Chat.Id, sent.MessageId),
+    CancellationToken.None);
 ```
 
-Метод вернёт `Message` с уже заполненным `Poll` — оттуда можно взять `poll.Id`, если нужно потом закрыть опрос или отследить голоса.
+Изменение голосов в **неанонимных** опросах прилетает через `update.PollAnswer` (нужно добавить `poll_answer` в `allowed_updates`).
 
-## Кастомный адрес Bot API или таймаут
-
-По умолчанию клиент ходит в `https://api.telegram.org` с таймаутом 30 секунд. Если нужно указать другой URL (переехавший домен, self-hosted [Bot API server](https://github.com/tdlib/telegram-bot-api), mock-сервер в тестах) или увеличить таймаут — передай `DefaultTransportOptions` в транспорт:
+## Отправка фото
 
 ```csharp
-using Telebot;
+// По URL — Telegram скачает сам:
+await bot.SendPhotoAsync(
+    new SendPhotoRequestParams(chatId, new InputFileWithUrl(new Uri("https://example.com/pic.jpg"))),
+    CancellationToken.None);
 
-var baseAddress = Environment.GetEnvironmentVariable("TELEGRAM_API_URL") is { } url
-    ? new Uri(url)
-    : new Uri("https://api.telegram.org");
+// Потоком — multipart:
+await using var file = File.OpenRead("photo.jpg");
+await bot.SendPhotoAsync(
+    new SendPhotoRequestParams(chatId, new InputFileWithStream(file, "image/jpeg", "photo.jpg")),
+    CancellationToken.None);
 
+// По file_id — если файл уже был на серверах Telegram:
+await bot.SendPhotoAsync(
+    new SendPhotoRequestParams(chatId, new InputFileWithId("AgACAgIAAxk...")),
+    CancellationToken.None);
+```
+
+## Кастомный адрес Bot API и таймаут
+
+По умолчанию клиент ходит в `https://api.telegram.org` с таймаутом 30 секунд. Переопределяется через `DefaultTransportOptions`:
+
+```csharp
 var transport = new DefaultTelegramTransport(new DefaultTransportOptions
 {
-    BaseAddress = baseAddress,
+    BaseAddress = new Uri("https://my-selfhosted-bot-api.local"),
     Timeout = TimeSpan.FromSeconds(60),
 });
 
 var bot = new Telegram(transport, "BOT_TOKEN");
 ```
 
-Дефолты заданы прямо на свойствах `DefaultTransportOptions`, поэтому в инициализаторе указывай только то, что реально меняешь.
+Транспорт долгоживущий — держи один инстанс на процесс. Пересоздание на каждый запрос ведёт к утечке сокетов; это классическая грабля `HttpClient` в .NET, не специфика библиотеки.
 
-Транспорт задуман как долгоживущий — держи один инстанс на весь процесс (или по одному на каждого бота, если ботов несколько). Пересоздание транспорта на каждый запрос ведёт к утечке сокетов; это классический подводный камень `HttpClient` в .NET, не специфика библиотеки.
+Для проксей, своего `HttpMessageHandler` или логирования запросов реализуй свой `ITelegramTransport` — `DefaultTransportOptions` намеренно оставлен минимальным.
 
-Если нужно что-то посложнее (прокси, свой `HttpMessageHandler`, логирование запросов) — реализуй свой `ITelegramTransport` и передай его в `new Telegram(transport, token)`. `DefaultTransportOptions` намеренно оставлен минимальным.
+## Обработка ошибок
+
+```csharp
+try
+{
+    await bot.SendMessageAsync(new SendMessageRequestParams(chatId, "hi"), CancellationToken.None);
+}
+catch (TelebotException ex)
+{
+    Console.WriteLine($"{ex.Code}: {ex.Message}");
+}
+```
+
+`ex.Code` — либо HTTP-статус (транспортный сбой), либо `error_code` от Telegram (прикладной), либо `null` для нарушений протокола.
 
 ## Что уже поддерживается
 
@@ -187,31 +169,26 @@ var bot = new Telegram(transport, "BOT_TOKEN");
 |---|---|
 | `getMe` | информация о боте, проверка токена |
 | `getUpdates` | long-polling новых событий |
+| `setWebhook` | регистрация webhook-URL |
 | `sendMessage` | отправка текстовых сообщений |
 | `sendPhoto` | отправка фото (file_id / URL / поток) |
-| `sendPoll` | отправка опросов |
-| `setWebhook` | регистрация webhook-URL |
 | `editMessageText` | редактирование текста ранее отправленного сообщения |
 | `editMessageReplyMarkup` | замена или снятие инлайн-клавиатуры |
+| `sendPoll` | отправка опросов |
+| `stopPoll` | принудительное закрытие опроса с финальной статистикой |
 | `answerCallbackQuery` | подтверждение приёма нажатия кнопки |
 
-Список будет расти — методы добавляются по мере необходимости.
+## Планы
 
-## Обработка ошибок
+Ближайшие направления развития — по мере запроса, без жёстких сроков:
 
-```csharp
-try
-{
-    await bot.SendMessageAsync(
-        new SendMessageRequestParams(ChatId: 123, Text: "hi"),
-        CancellationToken.None
-    );
-}
-catch (TelebotException ex)
-{
-    Console.WriteLine($"{ex.Code}: {ex.Message}");
-}
-```
+- **Инлайн-режим.** Модель `InlineQuery`, поле в `Update`, `answerInlineQuery` с типом-результатом `InlineQueryResultArticle` для текстовых подсказок.
+- **Скачивание файлов.** `getFile` + операция закачки в переданный `Stream` — так, чтобы файлы до 2 GB (self-hosted Bot API server) не буферизовались в памяти.
+- **Медиа-методы.** `sendDocument`, `sendVideo`, `sendAudio` — по тому же контракту, что уже реализован для `sendPhoto`.
+- **Форматирование в тексте.** `entities` в `sendMessage` / `editMessageText` (сейчас есть только `parse_mode`).
+- **Бизнес-подключения.** `business_connection_id` в методах отправки и редактирования — когда появится реальный кейс с бизнес-аккаунтами.
+
+Список не финальный — новые методы добавляются по мере появления реальных потребностей у пользователей библиотеки. Хочешь ускорить конкретный пункт — открывай issue с описанием сценария.
 
 ## Лицензия
 
