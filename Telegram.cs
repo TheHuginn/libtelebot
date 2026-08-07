@@ -121,6 +121,14 @@ public interface ITelegramClient
     /// </summary>
     Task<Message> SendPollAsync(SendPollRequestParams requestParams,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Вызывает метод <c>stopPoll</c> — принудительно закрывает опрос,
+    /// ранее отправленный ботом, и возвращает уже закрытый <see cref="Poll"/>
+    /// со всей финальной статистикой голосов.
+    /// </summary>
+    Task<Poll> StopPollAsync(StopPollRequestParams requestParams,
+        CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -246,5 +254,12 @@ public sealed class Telegram : ITelegramClient
         CancellationToken cancellationToken)
     {
         return await _transport.RequestAsync<Message>(requestParams, _token, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<Poll> StopPollAsync(StopPollRequestParams requestParams,
+        CancellationToken cancellationToken)
+    {
+        return await _transport.RequestAsync<Poll>(requestParams, _token, cancellationToken);
     }
 }

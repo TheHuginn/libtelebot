@@ -54,6 +54,11 @@ namespace Telebot.Models;
 /// Приходит только если бот явно подписан на <c>chat_member</c>
 /// через <c>allowed_updates</c> в <c>getUpdates</c>.
 /// </param>
+/// <param name="PollAnswer">
+/// Изменение голоса пользователя в неанонимном опросе. Для анонимных
+/// опросов Telegram этот апдейт не присылает вовсе — только счётчики
+/// в самом <see cref="Models.Poll"/> обновляются.
+/// </param>
 public record Update(
     [property: JsonPropertyName("update_id")]
     long UpdateId,
@@ -83,5 +88,8 @@ public record Update(
     ChatMemberUpdated? MyChatMember = null,
 
     [property: JsonPropertyName("chat_member")]
-    ChatMemberUpdated? ChatMember = null
+    ChatMemberUpdated? ChatMember = null,
+
+    [property: JsonPropertyName("poll_answer")]
+    PollAnswer? PollAnswer = null
 );
