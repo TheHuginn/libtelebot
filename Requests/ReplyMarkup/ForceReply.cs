@@ -28,5 +28,5 @@ public sealed record ForceReply(
         force_reply = true,
         input_field_placeholder = InputFieldPlaceholder,
         selective = Selective,
-    }, ReplyMarkupJson.Options);
+    }, TelebotJson.Options);
 }

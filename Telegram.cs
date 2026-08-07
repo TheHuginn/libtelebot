@@ -1,6 +1,38 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Telebot.Models;
 
 namespace Telebot;
+
+/// <summary>
+/// Единая конфигурация <see cref="JsonSerializer"/> для всей библиотеки.
+/// Используется во всех местах, где составные объекты запроса сериализуются
+/// в JSON-строку перед укладкой в поле формы Telegram Bot API.
+/// </summary>
+/// <remarks>
+/// Ключевая настройка — <see cref="JsonIgnoreCondition.WhenWritingNull"/>:
+/// свойства со значением <c>null</c> не попадают в итоговый JSON. Telegram
+/// различает «поле не задано» и «поле со значением по умолчанию», поэтому
+/// опциональные незаданные поля нельзя выдавать явно как <c>"field": null</c>
+/// — в союз-типах (<c>reply_markup</c>) это ломает распознавание варианта,
+/// а в остальных запросах даёт лишний шум в теле и в логах.
+/// <para/>
+/// Класс <c>internal</c>: наружу опции не торчат, никакого API-сюрприза
+/// для потребителя библиотеки не создают.
+/// </remarks>
+internal static class TelebotJson
+{
+    /// <summary>
+    /// Готовый набор опций для передачи вторым аргументом в
+    /// <see cref="JsonSerializer.Serialize{TValue}(TValue, JsonSerializerOptions?)"/>.
+    /// Экземпляр один на процесс и потокобезопасен — <see cref="JsonSerializerOptions"/>
+    /// после первого использования кешируется и переиспользуется.
+    /// </summary>
+    public static readonly JsonSerializerOptions Options = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
+}
 
 /// <summary>
 /// Высокоуровневый контракт клиента Telegram Bot API: предоставляет
@@ -88,6 +120,14 @@ public interface ITelegramClient
     /// через <see cref="Message.Poll"/>.
     /// </summary>
     Task<Message> SendPollAsync(SendPollRequestParams requestParams,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Вызывает метод <c>stopPoll</c> — принудительно закрывает опрос,
+    /// ранее отправленный ботом, и возвращает уже закрытый <see cref="Poll"/>
+    /// со всей финальной статистикой голосов.
+    /// </summary>
+    Task<Poll> StopPollAsync(StopPollRequestParams requestParams,
         CancellationToken cancellationToken);
 }
 
@@ -214,5 +254,12 @@ public sealed class Telegram : ITelegramClient
         CancellationToken cancellationToken)
     {
         return await _transport.RequestAsync<Message>(requestParams, _token, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<Poll> StopPollAsync(StopPollRequestParams requestParams,
+        CancellationToken cancellationToken)
+    {
+        return await _transport.RequestAsync<Poll>(requestParams, _token, cancellationToken);
     }
 }

@@ -62,7 +62,7 @@ public sealed record SetWebhookRequestParams(
         if (AllowedUpdates is not null)
             yield return new TelegramRequestField(
                 "allowed_updates",
-                JsonSerializer.Serialize(AllowedUpdates)
+                JsonSerializer.Serialize(AllowedUpdates, TelebotJson.Options)
             );
 
         if (DropPendingUpdates is not null)

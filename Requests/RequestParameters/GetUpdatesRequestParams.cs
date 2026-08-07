@@ -46,6 +46,6 @@ public sealed record GetUpdatesRequestParams(
         // allowed_updates ожидается Telegram именно как JSON-массив строк,
         // а не как form-поле со значением вида "a,b,c", поэтому сериализуем явно.
         if (AllowedUpdates is not null)
-            yield return new TelegramRequestField("allowed_updates", JsonSerializer.Serialize(AllowedUpdates));
+            yield return new TelegramRequestField("allowed_updates", JsonSerializer.Serialize(AllowedUpdates, TelebotJson.Options));
     }
 }

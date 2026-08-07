@@ -70,7 +70,7 @@ public sealed record SendMessageRequestParams(
             yield return new TelegramRequestField("parse_mode", ParseMode);
         if (LinkPreviewOptions is not null)
             yield return new TelegramRequestField("link_preview_options",
-                JsonSerializer.Serialize(LinkPreviewOptions));
+                JsonSerializer.Serialize(LinkPreviewOptions, TelebotJson.Options));
         if (DisableNotification is not null)
             yield return new TelegramRequestField("disable_notification",
                 DisableNotification.Value ? "true" : "false");
@@ -79,7 +79,7 @@ public sealed record SendMessageRequestParams(
                 ProtectContent.Value ? "true" : "false");
         if (ReplyParameters is not null)
             yield return new TelegramRequestField("reply_parameters",
-                JsonSerializer.Serialize(ReplyParameters));
+                JsonSerializer.Serialize(ReplyParameters, TelebotJson.Options));
         if (ReplyMarkup is not null)
             yield return new TelegramRequestField("reply_markup", ReplyMarkup.ToJson());
     }
