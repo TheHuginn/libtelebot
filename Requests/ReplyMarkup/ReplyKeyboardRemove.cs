@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Telebot;
@@ -12,6 +13,9 @@ public sealed record ReplyKeyboardRemove(
 ) : IReplyMarkup
 {
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("AOT",
+        "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        Justification = "Десериализация происходит используя дружественный к AOT контекст который должен иметь все типы зарегистрированными")]
     public string ToJson() => JsonSerializer.Serialize(new
     {
         remove_keyboard = true,

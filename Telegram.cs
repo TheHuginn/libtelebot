@@ -12,6 +12,11 @@ namespace Telebot;
 /// </summary>
 internal static class TelebotJson
 {
+    static TelebotJson()
+    {
+        Options.TypeInfoResolverChain.Insert(0, TelegramJsonSerializerContext.Default);
+    }
+
     public static readonly JsonSerializerOptions Options = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -202,4 +207,18 @@ public sealed class Telegram : ITelegramClient
     {
         return await _transport.DownloadAsync(file, _token, cancellationToken);
     }
+}
+
+// Типы используемые внутри библиотеки при явной сериализации
+[JsonSerializable(typeof(InputPollOption))]
+[JsonSerializable(typeof(LinkPreviewOptions))]
+[JsonSerializable(typeof(ReplyParameters))]
+[JsonSerializable(typeof(ReplyKeyboardMarkup))]
+[JsonSerializable(typeof(InlineKeyboardMarkup))]
+[JsonSerializable(typeof(ForceReply))]
+// Типы используемые для ответа, так как только он будет десериализовываться.
+// Все типы должны быть явно перечислены, это отвественность разработчика.
+[JsonSerializable(typeof(User))]
+internal partial class TelegramJsonSerializerContext : JsonSerializerContext
+{
 }

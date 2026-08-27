@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -198,6 +199,9 @@ public class DefaultTelegramTransport : ITelegramTransport
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("AOT",
+        "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        Justification = "Десериализация происходит используя дружественный к AOT контекст который должен иметь все типы зарегистрированными")]
     public async Task<T> RequestAsync<T>(TelegramRequest request, string token, CancellationToken cancellationToken)
     {
         var fields = request.GetRequestFields().ToList();
@@ -225,7 +229,7 @@ public class DefaultTelegramTransport : ITelegramTransport
         }
 
         var telegramResponse =
-            await response.Content.ReadFromJsonAsync<TelegramResponse>()
+            await response.Content.ReadFromJsonAsync<TelegramResponse>(TelebotJson.Options)
             ?? throw new TelebotException(
                 null,
                 "Telegram API returned an empty response body"
@@ -248,7 +252,7 @@ public class DefaultTelegramTransport : ITelegramTransport
             );
         }
 
-        var result = telegramResponse.Result.Value.Deserialize<T>()
+        var result = telegramResponse.Result.Value.Deserialize<T>(TelebotJson.Options)
             ?? throw new TelebotException(
                 null,
                 $"Failed to deserialize Telegram result to {typeof(T).Name}"

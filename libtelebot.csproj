@@ -14,5 +14,8 @@
     <Company>Bucketlab</Company>
     <Description>Библиотека клиент для телеграм</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    <IsAotCompatible>true</IsAotCompatible>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>
