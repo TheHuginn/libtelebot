@@ -12,14 +12,10 @@ namespace Telebot;
 /// </summary>
 internal static class TelebotJson
 {
-    static TelebotJson()
-    {
-        Options.TypeInfoResolverChain.Insert(0, TelegramJsonSerializerContext.Default);
-    }
-
     public static readonly JsonSerializerOptions Options = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        TypeInfoResolver =  TelegramJsonSerializerContext.Default,
     };
 }
 
